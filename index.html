@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Verificación de Placas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-user-shield"></i>
+                <h2>ACCESO AL SISTEMA</h2>
+                <p>Sistema de Verificación y Registro de Placas</p>
+            </div>
+            
+            <div class="login-body">
+                <div class="form-group">
+                    <label for="loginUsuario"><i class="fas fa-user"></i> USUARIO:</label>
+                    <input type="text" id="loginUsuario" class="form-control" placeholder="Ingrese su usuario" autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> CONTRASEÑA:</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Ingrese su contraseña">
+                </div>
+                
+                <button id="btnLogin" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> INICIAR SESIÓN
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema Principal (oculto inicialmente) -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Header con usuario y botón de cerrar sesión -->
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-car"></i>
+                    SISTEMA DE VERIFICACIÓN Y REGISTRO DE PLACAS
+                </h1>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="currentUser">Usuario</span>
+                    <span id="userRoleBadge" class="user-role" style="display: none; background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px;">ADMIN</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="connection-status" id="connectionStatus" title="Estado de conexión Supabase">
+                    <i class="fas fa-circle" style="color: #ccc;"></i>
+                </div>
+                <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="logout-btn" id="btnLogout" title="Cerrar sesión">
+                    <i class="fas fa-sign-out-alt"></i>
+                    SALIR
+                </button>
+            </div>
+        </div>
+
+        <!-- Pestañas -->
+        <div class="tabs">
+            <button class="tab active" data-tab="verification">
+                <i class="fas fa-search"></i> VERIFICACIÓN
+            </button>
+            <button class="tab" data-tab="database" id="databaseTabButton">
+                <i class="fas fa-database"></i> BASE DE DATOS
+            </button>
+            <button class="tab" data-tab="records">
+                <i class="fas fa-list-alt"></i> REGISTROS
+            </button>
+        </div>
+
+        <!-- Contenido de Pestaña 1: Verificación -->
+        <div class="tab-content active" id="verificationTab">
+            <div class="verification-container">
+                <!-- Cuadros de visualización superior -->
+                <div class="display-grid">
+                    <div class="display-box">
+                        <div class="display-label">
+                            <i class="fas fa-clipboard-check"></i> ESTADO DE TRÁMITE
+                        </div>
+                        <div id="estadoTramite" class="display-value empty">---</div>
+                    </div>
+                    
+                    <div class="display-box">
+                        <div class="display-label">
+                            <i class="fas fa-hashtag"></i> N° DE TRÁMITE
+                        </div>
+                        <div id="numeroTramite" class="display-value empty">---</div>
+                    </div>
+                    
+                    <div class="display-box">
+                        <div class="display-label">
+                            <i class="fas fa-tag"></i> TIPO HR
+                        </div>
+                        <div id="tipoHR" class="display-value empty">---</div>
+                    </div>
+                    
+                    <div class="display-box">
+                        <div class="display-label">
+                            <i class="fas fa-plate-wheat"></i> NRO PLACA
+                        </div>
+                        <div id="nroPlaca" class="display-value empty">---</div>
+                    </div>
+                </div>
+
+                <!-- Recuadro de texto largo -->
+                <div class="input-container">
+                    <div class="input-label">
+                        <i class="fas fa-paste"></i> INGRESE LOS DATOS DEL TRÁMITE:
+                        <button id="btnLimpiarDatos" class="clear-textarea-btn">
+                            <i class="fas fa-times"></i> LIMPIAR
+                        </button>
+                    </div>
+                    <div class="textarea-with-button">
+                        <textarea id="inputDatos" class="large-textarea" placeholder="Pegue aquí los datos del trámite..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botones centrales -->
+                <div class="button-container">
+                    <button id="btnCheck" class="main-btn btn-check">
+                        <i class="fas fa-check-circle"></i> CHECK
+                    </button>
+                    <button id="btnRegistrar" class="main-btn btn-registrar" disabled>
+                        <i class="fas fa-save"></i> REGISTAR
+                    </button>
+                    <button id="btnObservar" class="main-btn btn-observar" disabled>
+                        <i class="fas fa-eye"></i> OBSERVAR
+                    </button>
+                </div>
+
+                <!-- Recuadros de estado y empresa -->
+                <div class="status-container">
+                    <div class="status-box placa-default" id="placaBox">
+                        <div class="status-box-title">
+                            <i class="fas fa-car"></i> ESTADO DE PLACA
+                        </div>
+                        <div class="status-box-content" id="placaStatus">---</div>
+                    </div>
+                    
+                    <div class="status-box empresa-default" id="empresaBox">
+                        <div class="status-box-title">
+                            <i class="fas fa-building"></i> EMPRESA
+                        </div>
+                        <div class="status-box-content" id="empresaNombre">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido de Pestaña 2: Base de Datos -->
+        <div class="tab-content" id="databaseTab">
+            <div class="database-container">
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <div class="search-container">
+                        <input type="text" id="buscarPlaca" class="search-input restricted-input" placeholder="Buscar placa, empresa o asociación...">
+                        <button id="btnBuscar" class="btn btn-primary restricted-btn">
+                            <i class="fas fa-search"></i> BUSCAR
+                        </button>
+                        <button id="btnLimpiarBusqueda" class="btn btn-secondary restricted-btn">
+                            <i class="fas fa-times"></i> LIMPIAR
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="main-content-db">
+                    <!-- Left Column: Registration -->
+                    <div class="left-column">
+                        <div class="registration-panel">
+                            <div class="registration-header">
+                                <i class="fas fa-plus-circle"></i>
+                                REGISTRO DE PLACAS
+                            </div>
+                            <div class="registration-body">
+                                <div class="form-group-db">
+                                    <label class="form-label-db">PLACA:</label>
+                                    <input type="text" id="placa" class="form-control-db restricted-input" placeholder="Ej: 5000-XKN, ABC-123" maxlength="20">
+                                </div>
+                                
+                                <div class="form-group-db">
+                                    <label class="form-label-db">EMPRESA:</label>
+                                    <input type="text" id="empresa" class="form-control-db restricted-input" placeholder="Ej: DGS OIL LTDA." maxlength="100">
+                                </div>
+                                
+                                <div class="form-group-db">
+                                    <label class="form-label-db">ASOCIACIÓN:</label>
+                                    <input type="text" id="asociacion" class="form-control-db restricted-input" placeholder="Ej: DGS OIL LTDA." maxlength="100">
+                                </div>
+                                
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button id="btnGuardar" class="btn btn-primary restricted-btn" style="flex: 1 1 0%;"><i class="fas fa-save"></i> GUARDAR</button>
+                                    <button id="btnEditar" class="btn btn-info restricted-btn" style="flex: 1;"><i class="fas fa-edit"></i> EDITAR</button>
+                                    <button id="btnLimpiarForm" class="btn btn-secondary restricted-btn" style="flex: 1;">
+                                        <i class="fas fa-broom"></i> LIMPIAR
+                                    </button>
+                                </div>
+                                
+                                <div class="db-info">
+                                    <i class="fas fa-database"></i> 
+                                    <span id="dbStatusText">Base de datos: Multi-usuario - Datos compartidos entre todos los usuarios</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Table -->
+                    <div class="table-section" style="height: 100%;">
+                        <div class="table-header-db">
+                            <div class="table-title-db">
+                                <i class="fas fa-list"></i>
+                                REGISTROS DE PLACAS
+                                <span id="tableInfo" class="badge badge-primary">0 registros</span>
+                            </div>
+                        </div>
+                        
+                        <div class="table-wrapper" style="height: calc(100% - 120px);">
+                            <table id="placasTable" class="db-table">
+                                <thead>
+                                    <tr>
+                                        <th>PLACA</th>
+                                        <th>EMPRESA</th>
+                                        <th>ASOCIACIÓN</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="placasTableBody">
+                                    <!-- Los registros se cargarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stats-info">
+                                <i class="fas fa-database"></i>
+                                <span id="statsText">Total de registros en la base de datos</span>
+                            </div>
+                            <div class="stats-numbers">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="totalRegistros">0</span>
+                                    <span class="stat-label">TOTAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Row -->
+                <div class="controls-row">
+                    <button id="btnExportarExcel" class="btn btn-success restricted-btn">
+                        <i class="fas fa-file-excel"></i> EXPORTAR A EXCEL
+                    </button>
+                    <button id="btnImportarExcel" class="btn btn-primary restricted-btn">
+                        <i class="fas fa-file-import"></i> IMPORTAR DE EXCEL
+                    </button>
+                    <button id="btnEliminarTodos" class="btn btn-danger restricted-btn">
+                        <i class="fas fa-skull-crossbones"></i> ELIMINAR TODO
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido de Pestaña 3: Registros -->
+        <div class="tab-content" id="recordsTab">
+            <div class="records-container">
+                <div class="records-grid">
+                    <!-- Registros Aceptados -->
+                    <div class="records-box">
+                        <div class="records-header">
+                            <div class="records-title">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                REGISTROS ACEPTADOS
+                            </div>
+                            <div class="records-count" id="acceptedCount">0</div>
+                        </div>
+                        <div class="records-list" id="acceptedList">
+                            <div class="no-records">
+                                <i class="fas fa-check-circle"></i>
+                                <h3>No hay registros aceptados</h3>
+                                <p>Los registros aceptados aparecerán aquí</p>
+                            </div>
+                        </div>
+                        <div class="records-actions">
+                            <button id="btnEnviarAceptados" class="send-btn">
+                                <i class="fas fa-paper-plane"></i> ENVIAR
+                            </button>
+                            <button id="btnLimpiarAceptados" class="delete-all-btn" style="margin-top: 5px;">
+                                <i class="fas fa-broom"></i> LIMPIAR TODO
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Registros Observados (GLOBALES - COMPARTIDOS) -->
+                    <div class="records-box">
+                        <div class="records-header">
+                            <div class="records-title">
+                                <i class="fas fa-eye" style="color: var(--warning);"></i>
+                                REGISTROS OBSERVADOS (COMPARTIDOS)
+                            </div>
+                            <div class="records-count" id="observedCount">0</div>
+                        </div>
+                        <div class="records-list" id="observedList">
+                            <div class="no-records">
+                                <i class="fas fa-eye"></i>
+                                <h3>No hay registros observados</h3>
+                                <p>Los registros observados compartidos aparecerán aquí</p>
+                            </div>
+                        </div>
+                        <div class="records-actions">
+                            <button id="btnExportObserved" class="export-btn restricted-btn">
+                                <i class="fas fa-file-excel"></i> EXPORTAR
+                            </button>
+                            <button id="btnDeleteObserved" class="delete-all-btn restricted-btn">
+                                <i class="fas fa-trash"></i> ELIMINAR TODOS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA OBSERVACIONES -->
+    <div class="observation-modal" id="observationModal">
+        <div class="observation-modal-content">
+            <div class="observation-title">
+                <i class="fas fa-exclamation-triangle"></i> SELECCIONE TIPO DE OBSERVACIÓN
+            </div>
+            <div class="observation-options">
+                <div class="observation-option" data-observation="Solicitado">
+                    <i class="fas fa-hand-paper"></i>
+                    SOLICITADO
+                </div>
+                <div class="observation-option" data-observation="Ruta Erronea">
+                    <i class="fas fa-route"></i>
+                    RUTA ERRÓNEA
+                </div>
+                <div class="observation-option" data-observation="Duplicada">
+                    <i class="fas fa-copy"></i>
+                    DUPLICADA
+                </div>
+                <div class="observation-option" data-observation="No identificada">
+                    <i class="fas fa-question-circle"></i>
+                    NO IDENTIFICADA
+                </div>
+                <div class="observation-option" data-observation="Error">
+                    <i class="fas fa-times-circle"></i>
+                    ERROR
+                </div>
+            </div>
+            <div class="observation-buttons">
+                <button class="observation-btn confirm" id="confirmObservation">
+                    CONFIRMAR
+                </button>
+                <button class="observation-btn cancel" id="cancelObservation">
+                    CANCELAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES PARA LA BASE DE DATOS -->
+    <div id="importModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span><i class="fas fa-file-import"></i> IMPORTAR DESDE ARCHIVO EXCEL</span>
+                <button class="modal-close" id="importModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-instruction">
+                    <h4><i class="fas fa-info-circle"></i> FORMATO REQUERIDO PARA IMPORTAR</h4>
+                    <ul>
+                        <li><strong>Columna A:</strong> PLACA (Obligatorio)</li>
+                        <li><strong>Columna B:</strong> EMPRESA (Opcional)</li>
+                        <li><strong>Columna C:</strong> ASOCIACIÓN (Opcional)</li>
+                    </ul>
+                    <p style="margin: 0; font-size: 12px; color: inherit; opacity: 0.8;">
+                        El sistema leerá la primera hoja del archivo Excel.
+                    </p>
+                </div>
+                
+                <div class="file-upload" id="fileDropArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Arrastra y suelta tu archivo Excel</h3>
+                    <p>o haz clic para seleccionar</p>
+                    <p style="font-size: 13px; opacity: 0.7;">
+                        Formatos soportados: .xlsx, .xls, .xlsm, .csv
+                    </p>
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.xlsm,.csv">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open"></i> SELECCIONAR ARCHIVO
+                    </button>
+                </div>
+                
+                <div id="fileInfo" style="display: none;">
+                    <div style="background: var(--input-bg); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong id="fileName" style="font-size: 14px;">archivo.xlsx</strong>
+                            <button id="removeFile" class="btn btn-danger btn-sm">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="fileDetails" style="font-size: 13px;"></div>
+                        <div id="sheetInfo" class="sheet-info" style="display: block; margin-top: 8px;">
+                            <i class="fas fa-table"></i> <span id="sheetName">Hoja: "Sheet1"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px;">
+                        <input type="checkbox" id="skipDuplicates" checked style="width: 16px; height: 16px;">
+                        <span>Saltar placas duplicadas</span>
+                    </label>
+                </div>
+
+                <div id="importPreview" style="margin-top: 15px; display: none;">
+                    <h4 style="margin-bottom: 12px; color: var(--text-color); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-eye"></i> Vista Previa
+                    </h4>
+                    <div id="previewTable" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: var(--table-header-bg); position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 8px; border-bottom: 2px solid var(--border-color); font-size: 13px;">COLUMNA A: PLACA</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid var(--border-color); font-size: 13px;">COLUMNA B: EMPRESA</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid var(--border-color); font-size: 13px;">COLUMNA C: ASOCIACIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                                <!-- Vista previa se cargará aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="previewStats" style="margin-top: 8px; font-size: 13px; opacity: 0.7;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="importCancel" class="btn btn-secondary">CANCELAR</button>
+                <button id="importConfirm" class="btn btn-primary restricted-btn"><i class="fas fa-upload"></i> IMPORTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="confirmModalTitle"><i class="fas fa-exclamation-triangle"></i> ELIMINAR TODOS LOS REGISTROS</span>
+                <button class="modal-close" id="confirmModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage" style="font-size: 15px; line-height: 1.5;"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmModalCancel" class="btn btn-secondary">CANCELAR</button>
+                <button id="confirmModalConfirm" class="btn btn-danger restricted-btn">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="resultModalTitle"><i class="fas fa-check-circle"></i> RESUMEN DE IMPORTACIÓN</span>
+                <button class="modal-close" id="resultModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="resultModalMessage" style="font-size: 15px; line-height: 1.5; white-space: pre-line;"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="resultModalCloseBtn" class="btn btn-primary">ACEPTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheetSelectModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span><i class="fas fa-table"></i> SELECCIONAR HOJA DE TRABAJO</span>
+                <button class="modal-close" id="sheetSelectModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; font-size: 14px;">
+                    Se encontraron múltiples hojas en el archivo Excel. Seleccione la hoja que desea importar:
+                </p>
+                <div id="sheetList" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Lista de hojas se cargará aquí -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="sheetSelectCancel" class="btn btn-secondary">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de envío -->
+    <div id="sendModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span><i class="fas fa-paper-plane"></i> ENVIAR REGISTROS ACEPTADOS</span>
+                <button class="modal-close" id="sendModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="sendModalMessage" style="font-size: 15px; line-height: 1.5;"></p>
+                <div id="sendProgress" style="display: none; margin-top: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="spinner"></div>
+                        <span>Enviando correo electrónico...</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                        <i class="fas fa-info-circle"></i>
+                        Por favor espere, esto puede tomar unos segundos
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="sendModalCancel" class="btn btn-secondary">CANCELAR</button>
+                <button id="sendModalConfirm" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> ENVIAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la aplicación -->
+    <script src="database.js"></script>
+    <script src="supabase.js"></script>
+    <script>
+        // ============================================
+        // MÓDULO DE AUTENTICACIÓN Y USUARIOS - MODIFICADO
+        // ============================================
+        class AuthenticationManager {
+            constructor() {
+                // Usuarios predefinidos - jconde es administrador
+                this.users = [
+                    { username: 'admined6', password: 'c0rp0rac10n', name: 'YPFB - ED-6', isAdmin: true },
+                    { username: 'jconde', password: 'jcondeed6', name: 'Juan Jose Conde Lecoña', isAdmin: true },
+                    { username: 'arcortez', password: 'arcortez123', name: 'Andrea del Rosario Cortez Castro', isAdmin: false },
+                    { username: 'amamaniv', password: 'amamaniv123', name: 'Ayde Mamani Villca', isAdmin: false },
+                    { username: 'btardio', password: 'btardio123', name: 'Bryan Antonio Tardio Antelo', isAdmin: false },
+                    { username: 'cchacon', password: 'cchacon123', name: 'Cristhian Chacon Avalos', isAdmin: false },
+                    { username: 'gespinar', password: 'gespinar123', name: 'Geraldine Tania Espinar Rea', isAdmin: false },
+                    { username: 'jchavezm', password: 'jchavezm123', name: 'Judith Chavez Montalvo', isAdmin: false },
+                    { username: 'kcornejo', password: 'kcornejo123', name: 'Khana Wara Cornejo Banda', isAdmin: false },
+                    { username: 'rmcamacho', password: 'rmcamacho123', name: 'Raquel Miriam Camacho Borda', isAdmin: false },
+                    { username: 'tmaldonado', password: 'tmaldonado123', name: 'Tatiana Alejandra Maldonado Zapata', isAdmin: false },
+                    { username: 'rdipp', password: 'rdipp123', name: 'Ramiro Martin Dipp Idiaquez', isAdmin: false },
+                    { username: 'knunez', password: 'knunez123', name: 'Karem Roxana Nuñez Gonzales', isAdmin: false }
+                ];
+                
+                this.currentUser = null;
+                this.init();
+            }
+            
+            init() {
+                this.bindLoginEvents();
+                this.checkExistingSession();
+            }
+            
+            bindLoginEvents() {
+                document.getElementById('btnLogin').addEventListener('click', () => this.login());
+                
+                document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.login();
+                });
+                
+                document.getElementById('btnLogout').addEventListener('click', () => this.logout());
+            }
+            
+            checkExistingSession() {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    try {
+                        const user = JSON.parse(savedUser);
+                        this.currentUser = user;
+                        this.showMainSystem();
+                        this.updateUserInterface();
+                    } catch (error) {
+                        this.showLogin();
+                    }
+                } else {
+                    this.showLogin();
+                }
+            }
+            
+            login() {
+                const username = document.getElementById('loginUsuario').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                
+                if (!username || !password) {
+                    this.showAlert('Advertencia', 'Ingrese usuario y contraseña', 'warning');
+                    return;
+                }
+                
+                const user = this.users.find(u => 
+                    u.username === username && u.password === password
+                );
+                
+                if (user) {
+                    this.currentUser = {
+                        username: user.username,
+                        name: user.name,
+                        isAdmin: user.isAdmin || false,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                    
+                    this.showMainSystem();
+                    this.updateUserInterface();
+                    this.showAlert('Éxito', `Bienvenido ${user.name}`, 'success');
+                    
+                    document.getElementById('loginUsuario').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    
+                } else {
+                    this.showAlert('Error', 'Usuario o contraseña incorrectos', 'error');
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginPassword').focus();
+                }
+            }
+            
+            logout() {
+                if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                    this.currentUser = null;
+                    localStorage.removeItem('currentUser');
+                    this.showLogin();
+                    this.showAlert('Información', 'Sesión cerrada correctamente', 'info');
+                }
+            }
+            
+            showLogin() {
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('mainContainer').style.display = 'none';
+            }
+            
+            showMainSystem() {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                document.getElementById('currentUser').textContent = this.currentUser.name;
+            }
+            
+            updateUserInterface() {
+                // Mostrar badge de administrador si corresponde
+                const roleBadge = document.getElementById('userRoleBadge');
+                if (this.currentUser.isAdmin) {
+                    roleBadge.textContent = 'ADMIN';
+                    roleBadge.style.display = 'inline-block';
+                    roleBadge.style.backgroundColor = '#27ae60'; // Verde
+                } else {
+                    roleBadge.style.display = 'none';
+                }
+                
+                // Aplicar restricciones según el rol
+                this.applyUserRestrictions();
+            }
+            
+            applyUserRestrictions() {
+                const isAdmin = this.currentUser.isAdmin;
+                
+                // 1. Pestaña Base de Datos
+                if (!isAdmin) {
+                    // Bloquear pestaña Base de Datos
+                    const databaseTabButton = document.getElementById('databaseTabButton');
+                    databaseTabButton.disabled = true;
+                    databaseTabButton.style.opacity = '0.5';
+                    databaseTabButton.style.cursor = 'not-allowed';
+                    databaseTabButton.title = 'Acceso restringido - Solo administrador';
+                    
+                    // Bloquear todos los elementos con clase "restricted-btn" y "restricted-input"
+                    document.querySelectorAll('.restricted-btn').forEach(btn => {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                        btn.title = 'Acceso restringido - Solo administrador';
+                    });
+                    
+                    document.querySelectorAll('.restricted-input').forEach(input => {
+                        input.disabled = true;
+                        input.style.opacity = '0.5';
+                        input.style.cursor = 'not-allowed';
+                        input.placeholder = 'Acceso restringido - Solo administrador';
+                    });
+                    
+                    // Bloquear botones específicos en la pestaña de Registros
+                    const exportObservedBtn = document.getElementById('btnExportObserved');
+                    const deleteObservedBtn = document.getElementById('btnDeleteObserved');
+                    
+                    if (exportObservedBtn) {
+                        exportObservedBtn.disabled = true;
+                        exportObservedBtn.style.opacity = '0.5';
+                        exportObservedBtn.style.cursor = 'not-allowed';
+                        exportObservedBtn.title = 'Acceso restringido - Solo administrador';
+                    }
+                    
+                    if (deleteObservedBtn) {
+                        deleteObservedBtn.disabled = true;
+                        deleteObservedBtn.style.opacity = '0.5';
+                        deleteObservedBtn.style.cursor = 'not-allowed';
+                        deleteObservedBtn.title = 'Acceso restringido - Solo administrador';
+                    }
+                } else {
+                    // Para administrador, habilitar todo
+                    const databaseTabButton = document.getElementById('databaseTabButton');
+                    if (databaseTabButton) {
+                        databaseTabButton.disabled = false;
+                        databaseTabButton.style.opacity = '1';
+                        databaseTabButton.style.cursor = 'pointer';
+                        databaseTabButton.title = '';
+                    }
+                    
+                    document.querySelectorAll('.restricted-btn').forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.title = '';
+                    });
+                    
+                    document.querySelectorAll('.restricted-input').forEach(input => {
+                        input.disabled = false;
+                        input.style.opacity = '1';
+                        input.style.cursor = 'text';
+                        input.placeholder = input.getAttribute('data-original-placeholder') || 
+                                          (input.id === 'placa' ? 'Ej: 5000-XKN, ABC-123' : 
+                                           input.id === 'buscarPlaca' ? 'Buscar placa, empresa o asociación...' : 
+                                           'Ej: DGS OIL LTDA.');
+                    });
+                    
+                    // Habilitar botones en Registros
+                    const exportObservedBtn = document.getElementById('btnExportObserved');
+                    const deleteObservedBtn = document.getElementById('btnDeleteObserved');
+                    
+                    if (exportObservedBtn) {
+                        exportObservedBtn.disabled = false;
+                        exportObservedBtn.style.opacity = '1';
+                        exportObservedBtn.style.cursor = 'pointer';
+                        exportObservedBtn.title = '';
+                    }
+                    
+                    if (deleteObservedBtn) {
+                        deleteObservedBtn.disabled = false;
+                        deleteObservedBtn.style.opacity = '1';
+                        deleteObservedBtn.style.cursor = 'pointer';
+                        deleteObservedBtn.title = '';
+                    }
+                }
+            }
+            
+            showAlert(titulo, mensaje, tipo = 'info') {
+                const alerta = document.createElement('div');
+                
+                let clase = 'alert-info';
+                switch(tipo) {
+                    case 'success': clase = 'alert-success'; break;
+                    case 'error': clase = 'alert-error'; break;
+                    case 'warning': clase = 'alert-warning'; break;
+                }
+                
+                alerta.className = `alert ${clase}`;
+                
+                let icono = 'fas fa-info-circle';
+                if (tipo === 'success') icono = 'fas fa-check-circle';
+                if (tipo === 'error') icono = 'fas fa-times-circle';
+                if (tipo === 'warning') icono = 'fas fa-exclamation-triangle';
+                
+                alerta.innerHTML = `
+                    <i class="${icono}" style="font-size: 18px; margin-top: 2px;"></i>
+                    <div>
+                        <div style="font-size: 14px; margin-bottom: 4px; font-weight: 700;">${titulo}</div>
+                        <div style="font-size: 13px; opacity: 0.9;">${mensaje}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(alerta);
+                
+                setTimeout(() => {
+                    alerta.style.animation = 'slideOutAlert 0.3s ease-out';
+                    setTimeout(() => {
+                        if (alerta.parentNode) {
+                            alerta.parentNode.removeChild(alerta);
+                        }
+                    }, 300);
+                }, 4000);
+            }
+            
+            getCurrentUser() {
+                return this.currentUser ? this.currentUser.name : 'Usuario';
+            }
+            
+            isCurrentUserAdmin() {
+                return this.currentUser ? this.currentUser.isAdmin : false;
+            }
+        }
+
+        // ============================================
+        // MÓDULO DE GESTIÓN DE TEMA Y TRANSICIONES
+        // ============================================
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.getElementById('themeToggle');
+                this.currentTab = 'verification';
+                this.previousTab = 'verification';
+                this.init();
+            }
+            
+            init() {
+                this.loadTheme();
+                this.bindEvents();
+            }
+            
+            loadTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                this.updateThemeIcon(savedTheme);
+            }
+            
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                this.updateThemeIcon(newTheme);
+            }
+            
+            updateThemeIcon(theme) {
+                const icon = this.themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                    this.themeToggle.title = 'Cambiar a tema claro';
+                } else {
+                    icon.className = 'fas fa-moon';
+                    this.themeToggle.title = 'Cambiar a tema oscuro';
+                }
+            }
+            
+            bindEvents() {
+                this.themeToggle.addEventListener('click', () => {
+                    this.toggleTheme();
+                });
+            }
+            
+            setTabDirection(currentTabId, newTabId) {
+                const tabs = ['verification', 'database', 'records'];
+                const currentIndex = tabs.indexOf(currentTabId);
+                const newIndex = tabs.indexOf(newTabId);
+                
+                this.previousTab = currentTabId;
+                this.currentTab = newTabId;
+                
+                return currentIndex < newIndex ? 'right' : 'left';
+            }
+        }
+
+        // ============================================
+        // MÓDULO PRINCIPAL DEL SISTEMA DE VERIFICACIÓN CON SUPABASE
+        // ============================================
+        class SistemaVerificacionPlacas {
+            constructor() {
+                this.authManager = new AuthenticationManager();
+                this.supabaseManager = new SupabaseManager();
+                this.datosActuales = null;
+                this.placaEncontrada = null;
+                this.observacionSeleccionada = null;
+                this.placasEnRevision = {};
+                this.registrosObservadosGlobales = [];
+                this.registrosAceptadosGlobales = [];
+                this.themeManager = new ThemeManager();
+                this.init();
+            }
+            
+            async init() {
+                // Inicializar Supabase primero
+                await this.supabaseManager.init();
+                
+                // Actualizar texto de estado de la base de datos
+                this.updateDatabaseStatusText();
+                
+                // Solo inicializar si hay usuario autenticado
+                if (this.authManager.currentUser) {
+                    await this.cargarObservacionesGlobales();
+                    this.cargarAceptadosGlobales();
+                    this.registrosAceptados = [];
+                    this.registrosObservados = [];
+                    
+                    this.bindEvents();
+                    this.cargarRegistrosDesdeLocalStorage();
+                    this.actualizarContadores();
+                    this.mostrarRegistrosAceptados();
+                    this.mostrarRegistrosObservados();
+                    
+                    this.configurarTabs();
+                    this.inicializarBaseDeDatos();
+                    this.bindSendButton();
+                    
+                    // Aplicar restricciones después de inicializar
+                    this.authManager.applyUserRestrictions();
+                }
+            }
+            
+            updateDatabaseStatusText() {
+                const dbStatusElement = document.getElementById('dbStatusText');
+                if (!dbStatusElement) return;
+                
+                if (this.supabaseManager.isConnected) {
+                    dbStatusElement.innerHTML = '✅ Base de datos: Conectado a Supabase - Datos compartidos en tiempo real';
+                } else {
+                    dbStatusElement.innerHTML = '⚠️ Base de datos: Modo local - Sin conexión a Supabase';
+                }
+            }
+            
+            bindSendButton() {
+                document.getElementById('btnEnviarAceptados').addEventListener('click', () => {
+                    this.enviarRegistrosAceptados();
+                });
+                
+                // Agregar botón para limpiar manualmente
+                document.getElementById('btnLimpiarAceptados').addEventListener('click', () => {
+                    this.limpiarTodosRegistrosAceptados();
+                });
+            }
+            
+            inicializarBaseDeDatos() {
+                // Pasar el SupabaseManager a la base de datos
+                window.placasDatabaseApp = new PlacasDatabaseApp(this.supabaseManager);
+            }
+            
+            configurarTabs() {
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        // Si el usuario no es admin y hace clic en la pestaña de Base de Datos
+                        if (tab.dataset.tab === 'database' && !this.authManager.isCurrentUserAdmin()) {
+                            this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede acceder a la Base de Datos', 'warning');
+                            return;
+                        }
+                        
+                        const tabId = tab.dataset.tab;
+                        const direction = this.themeManager.setTabDirection(this.themeManager.currentTab, tabId);
+                        this.cambiarPestana(tabId, direction);
+                    });
+                });
+            }
+            
+            cambiarPestana(tabId, direction = 'right') {
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-content').forEach(c => {
+                    c.classList.remove('active');
+                });
+                
+                const tabElement = document.querySelector(`.tab[data-tab="${tabId}"]`);
+                const contentElement = document.getElementById(`${tabId}Tab`);
+                
+                if (tabElement && contentElement) {
+                    tabElement.classList.add('active');
+                    contentElement.classList.add('active');
+                    
+                    // Aplicar dirección de animación
+                    contentElement.setAttribute('data-direction', direction);
+                    
+                    // Forzar reflow para reiniciar animación
+                    void contentElement.offsetWidth;
+                }
+            }
+            
+            bindEvents() {
+                document.getElementById('btnCheck').addEventListener('click', () => {
+                    this.procesarDatos();
+                });
+                
+                document.getElementById('btnRegistrar').addEventListener('click', () => {
+                    this.registrarAceptado();
+                });
+                
+                document.getElementById('btnObservar').addEventListener('click', () => {
+                    this.mostrarModalObservaciones();
+                });
+                
+                document.getElementById('btnLimpiarDatos').addEventListener('click', () => {
+                    this.limpiarTextarea();
+                });
+                
+                document.getElementById('btnExportObserved').addEventListener('click', () => {
+                    if (!this.authManager.isCurrentUserAdmin()) {
+                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede exportar registros observados', 'warning');
+                        return;
+                    }
+                    this.exportarAExcel('observados');
+                });
+                
+                document.getElementById('btnDeleteObserved').addEventListener('click', () => {
+                    if (!this.authManager.isCurrentUserAdmin()) {
+                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede eliminar registros observados', 'warning');
+                        return;
+                    }
+                    this.eliminarTodosRegistrosObservados();
+                });
+                
+                document.querySelectorAll('.observation-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        this.seleccionarObservacion(e.target.closest('.observation-option'));
+                    });
+                });
+                
+                document.getElementById('confirmObservation').addEventListener('click', () => {
+                    this.confirmarObservacion();
+                });
+                
+                document.getElementById('cancelObservation').addEventListener('click', () => {
+                    this.ocultarModalObservaciones();
+                });
+                
+                document.getElementById('inputDatos').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        this.procesarDatos();
+                    }
+                });
+                
+                // Eventos para el modal de envío
+                document.getElementById('sendModalClose').addEventListener('click', () => this.cerrarModalEnvio());
+                document.getElementById('sendModalCancel').addEventListener('click', () => this.cerrarModalEnvio());
+                document.getElementById('sendModalConfirm').addEventListener('click', () => this.confirmarEnvio());
+            }
+            
+            procesarDatos() {
+                const texto = document.getElementById('inputDatos').value.trim();
+                
+                if (!texto) {
+                    this.mostrarAlerta('Advertencia', 'Ingrese datos para procesar', 'warning');
+                    return;
+                }
+                
+                try {
+                    this.datosActuales = null;
+                    this.placaEncontrada = null;
+                    
+                    let datosProcesados = null;
+                    
+                    if (texto.includes('\n')) {
+                        datosProcesados = this.procesarFormatoDosLineas(texto);
+                    } else {
+                        datosProcesados = this.procesarFormatoUnaLinea(texto);
+                    }
+                    
+                    if (!datosProcesados) {
+                        this.mostrarAlerta('Error', 'Formato no reconocido. Use los ejemplos como referencia', 'error');
+                        return;
+                    }
+                    
+                    this.datosActuales = datosProcesados;
+                    
+                    const placaObservada = this.verificarPlacaObservada(this.datosActuales.nroPlaca);
+                    if (placaObservada) {
+                        this.mostrarAlerta(
+                            'Placa ya observada', 
+                            `Esta placa ya fue observada como: ${placaObservada.observacion}`,
+                            'warning'
+                        );
+                    }
+                    
+                    const placaAceptada = this.verificarPlacaAceptadaGlobalmente(this.datosActuales.nroPlaca);
+                    if (placaAceptada) {
+                        this.mostrarAlerta(
+                            'Placa ya aceptada', 
+                            `La placa ${this.datosActuales.nroPlaca} ya fue aceptada anteriormente.\n\nPara registrar esta placa nuevamente, primero debe enviar todos los registros aceptados usando el botón "ENVIAR" en la pestaña de Registros.`,
+                            'warning'
+                        );
+                        document.getElementById('btnRegistrar').disabled = true;
+                    } else {
+                        document.getElementById('btnRegistrar').disabled = false;
+                    }
+                    
+                    this.placasEnRevision[this.datosActuales.nroPlaca] = this.authManager.getCurrentUser();
+                    
+                    document.getElementById('estadoTramite').textContent = this.datosActuales.estadoTramite;
+                    document.getElementById('estadoTramite').className = 'display-value';
+                    
+                    document.getElementById('numeroTramite').textContent = this.datosActuales.numeroTramite;
+                    document.getElementById('numeroTramite').className = 'display-value';
+                    
+                    document.getElementById('tipoHR').textContent = this.datosActuales.tipoHR;
+                    document.getElementById('tipoHR').className = 'display-value';
+                    
+                    document.getElementById('nroPlaca').textContent = this.datosActuales.nroPlaca;
+                    document.getElementById('nroPlaca').className = 'display-value';
+                    
+                    this.verificarPlacaEnBaseDeDatos(this.datosActuales.nroPlaca);
+                    
+                } catch (error) {
+                    console.error('Error procesando datos:', error);
+                    this.mostrarAlerta('Error', 'Error al procesar los datos: ' + error.message, 'error');
+                }
+            }
+            
+            procesarFormatoDosLineas(texto) {
+                const lineas = texto.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
+                
+                if (lineas.length < 2) {
+                    return null;
+                }
+                
+                const estadoTramite = lineas[0];
+                const segundaLinea = lineas[1];
+                
+                const datosSegundaLinea = segundaLinea.split(/\t|\s{2,}/).filter(d => d.trim() !== '');
+                
+                if (datosSegundaLinea.length < 5) {
+                    return null;
+                }
+                
+                return {
+                    estadoTramite: estadoTramite,
+                    numeroTramite: datosSegundaLinea[0],
+                    tipoHR: datosSegundaLinea[1],
+                    usuario: datosSegundaLinea[2],
+                    nroPlaca: datosSegundaLinea[3],
+                    fechaEstado: datosSegundaLinea[4],
+                    formato: 'dos-lineas'
+                };
+            }
+            
+            procesarFormatoUnaLinea(texto) {
+                const datos = texto.split(/\t|\s{2,}/).filter(d => d.trim() !== '');
+                
+                if (datos.length < 6) {
+                    return null;
+                }
+                
+                return {
+                    estadoTramite: datos[0],
+                    numeroTramite: datos[1],
+                    tipoHR: datos[2],
+                    usuario: datos[3],
+                    nroPlaca: datos[4],
+                    fechaEstado: datos[5],
+                    formato: 'una-linea'
+                };
+            }
+
+            async verificarPlacaEnBaseDeDatos(placa) {
+                try {
+                    console.log(`🔍 Verificando placa en base de datos: "${placa}"`);
+                    
+                    if (!window.placasDatabaseApp) {
+                        throw new Error('Base de datos no inicializada');
+                    }
+                    
+                    // Usar el método optimizado para verificar existencia
+                    this.placaEncontrada = await window.placasDatabaseApp.db.verificarPlacaExiste(placa);
+                    
+                    // DEBUG: Mostrar variantes generadas
+                    const variantes = PlacaValidator.generarVariantesBusqueda(placa);
+                    console.log(`🔍 Variantes generadas para "${placa}":`, variantes);
+                    
+                    // Actualizar la interfaz
+                    const placaBox = document.getElementById('placaBox');
+                    const placaStatus = document.getElementById('placaStatus');
+                    const empresaBox = document.getElementById('empresaBox');
+                    const empresaNombre = document.getElementById('empresaNombre');
+                    
+                    if (this.placaEncontrada) {
+                        placaBox.className = 'status-box placa-found';
+                        placaStatus.textContent = '✓ ENCONTRADA';
+                        placaStatus.style.color = 'var(--success)';
+                        
+                        empresaBox.className = 'status-box empresa-found';
+                        empresaNombre.textContent = this.placaEncontrada.empresa || 'No especificada';
+                        
+                        document.getElementById('btnRegistrar').disabled = false;
+                        document.getElementById('btnObservar').disabled = false;
+                        
+                        console.log(`✅ Placa encontrada: "${this.placaEncontrada.placa}" -> Empresa: "${this.placaEncontrada.empresa}"`);
+                        
+                    } else {
+                        placaBox.className = 'status-box placa-notfound';
+                        placaStatus.textContent = '✗ NO ENCONTRADA';
+                        placaStatus.style.color = 'var(--danger)';
+                        
+                        empresaBox.className = 'status-box empresa-notfound';
+                        empresaNombre.textContent = 'NO REGISTRADA';
+                        
+                        document.getElementById('btnRegistrar').disabled = true;
+                        document.getElementById('btnObservar').disabled = false;
+                        
+                        console.log(`❌ Placa NO encontrada: "${placa}"`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ ERROR verificando placa:', error);
+                    
+                    const placaBox = document.getElementById('placaBox');
+                    const placaStatus = document.getElementById('placaStatus');
+                    
+                    placaBox.className = 'status-box placa-notfound';
+                    placaStatus.textContent = 'ERROR EN CONSULTA';
+                    placaStatus.style.color = 'var(--danger)';
+                    
+                    document.getElementById('btnRegistrar').disabled = true;
+                    document.getElementById('btnObservar').disabled = true;
+                }
+            }
+
+            mostrarModalObservaciones() {
+                if (!this.datosActuales) {
+                    this.mostrarAlerta('Error', 'No hay datos para observar', 'error');
+                    return;
+                }
+                
+                this.observacionSeleccionada = null;
+                document.querySelectorAll('.observation-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                document.getElementById('observationModal').style.display = 'flex';
+            }
+            
+            ocultarModalObservaciones() {
+                document.getElementById('observationModal').style.display = 'none';
+                this.observacionSeleccionada = null;
+            }
+            
+            seleccionarObservacion(element) {
+                document.querySelectorAll('.observation-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                element.classList.add('selected');
+                this.observacionSeleccionada = element.dataset.observation;
+            }
+            
+            confirmarObservacion() {
+                if (!this.observacionSeleccionada) {
+                    this.mostrarAlerta('Advertencia', 'Seleccione un tipo de observación', 'warning');
+                    return;
+                }
+                
+                this.registrarObservado();
+                this.ocultarModalObservaciones();
+            }
+            
+            registrarAceptado() {
+                if (!this.datosActuales) {
+                    this.mostrarAlerta('Error', 'No hay datos para registrar como aceptado', 'error');
+                    return;
+                }
+                
+                const placaAceptadaGlobal = this.verificarPlacaAceptadaGlobalmente(this.datosActuales.nroPlaca);
+                if (placaAceptadaGlobal) {
+                    this.mostrarAlerta(
+                        'Placa ya aceptada', 
+                        `La placa ${this.datosActuales.nroPlaca} ya fue aceptada anteriormente.\n\nPara registrar esta placa nuevamente, primero debe enviar todos los registros aceptados usando el botón "ENVIAR" en la pestaña de Registros.`,
+                        'warning'
+                    );
+                    document.getElementById('btnRegistrar').disabled = true;
+                    return;
+                }
+                
+                const registro = {
+                    ...this.datosActuales,
+                    empresa: this.placaEncontrada ? (this.placaEncontrada.empresa || 'No especificada') : 'No encontrada',
+                    fechaRegistro: new Date().toLocaleString('es-ES', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }),
+                    timestamp: Date.now(),
+                    tipo: 'aceptado',
+                    usuarioRegistro: this.authManager.getCurrentUser()
+                };
+                
+                delete registro.usuario;
+                delete registro.fechaEstado;
+                delete registro.formato;
+                
+                this.registrosAceptados.unshift(registro);
+                
+                this.agregarAceptadoGlobal(registro);
+                
+                this.guardarRegistrosEnLocalStorage();
+                this.guardarAceptadosGlobales();
+                
+                delete this.placasEnRevision[this.datosActuales.nroPlaca];
+                
+                this.actualizarContadores();
+                this.mostrarRegistrosAceptados();
+                this.limpiarFormulario();
+                
+                this.mostrarAlerta('Éxito', 'Registro ACEPTADO guardado correctamente', 'success');
+            }
+            
+            agregarAceptadoGlobal(registro) {
+                if (registro.estadoTramite === 'Subsanado P. A.') {
+                    this.registrosAceptadosGlobales.push({
+                        nroPlaca: registro.nroPlaca,
+                        numeroTramite: registro.numeroTramite,
+                        empresa: registro.empresa,
+                        estadoTramite: registro.estadoTramite,
+                        tipoHR: registro.tipoHR,
+                        fechaRegistro: registro.fechaRegistro,
+                        usuarioRegistro: registro.usuarioRegistro,
+                        timestamp: registro.timestamp
+                    });
+                } else {
+                    const index = this.registrosAceptadosGlobales.findIndex(
+                        item => item.nroPlaca === registro.nroPlaca
+                    );
+                    
+                    if (index === -1) {
+                        this.registrosAceptadosGlobales.push({
+                            nroPlaca: registro.nroPlaca,
+                            numeroTramite: registro.numeroTramite,
+                            empresa: registro.empresa,
+                            estadoTramite: registro.estadoTramite,
+                            tipoHR: registro.tipoHR,
+                            fechaRegistro: registro.fechaRegistro,
+                            usuarioRegistro: registro.usuarioRegistro,
+                            timestamp: registro.timestamp
+                        });
+                    }
+                }
+            }
+            
+            verificarPlacaAceptadaGlobalmente(placa) {
+                return this.registrosAceptadosGlobales.find(item => item.nroPlaca === placa);
+            }
+            
+            cargarAceptadosGlobales() {
+                try {
+                    const aceptadosGlobales = localStorage.getItem('aceptados_globales');
+                    this.registrosAceptadosGlobales = aceptadosGlobales ? JSON.parse(aceptadosGlobales) : [];
+                } catch (error) {
+                    console.error('Error cargando aceptados globales:', error);
+                    this.registrosAceptadosGlobales = [];
+                }
+            }
+            
+            guardarAceptadosGlobales() {
+                try {
+                    localStorage.setItem('aceptados_globales', JSON.stringify(this.registrosAceptadosGlobales));
+                } catch (error) {
+                    console.error('Error guardando aceptados globales:', error);
+                }
+            }
+            
+            async registrarObservado() {
+                if (!this.datosActuales) {
+                    this.mostrarAlerta('Error', 'No hay datos para registrar como observado', 'error');
+                    return;
+                }
+                
+                if (!this.observacionSeleccionada) {
+                    this.mostrarAlerta('Error', 'Seleccione un tipo de observación', 'error');
+                    return;
+                }
+                
+                const registro = {
+                    nroPlaca: this.datosActuales.nroPlaca,
+                    numeroTramite: this.datosActuales.numeroTramite,
+                    observacion: this.observacionSeleccionada,
+                    fechaRegistro: new Date().toLocaleString('es-ES', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }),
+                    timestamp: Date.now(),
+                    tipo: 'observado',
+                    usuarioRegistro: this.authManager.getCurrentUser()
+                };
+                
+                await this.agregarObservacionGlobal(registro);
+                
+                await this.guardarObservacionesGlobales();
+                
+                delete this.placasEnRevision[this.datosActuales.nroPlaca];
+                
+                this.actualizarContadores();
+                this.mostrarRegistrosObservados();
+                this.limpiarFormulario();
+                
+                this.mostrarAlerta('Éxito', `Registro OBSERVADO (${this.observacionSeleccionada}) guardado correctamente`, 'success');
+            }
+            
+            async agregarObservacionGlobal(registro) {
+                const index = this.registrosObservadosGlobales.findIndex(
+                    obs => obs.nroPlaca === registro.nroPlaca && 
+                        obs.usuarioRegistro === registro.usuarioRegistro
+                );
+                
+                if (index !== -1) {
+                    this.registrosObservadosGlobales[index] = {
+                        ...this.registrosObservadosGlobales[index],
+                        observacion: registro.observacion,
+                        numeroTramite: registro.numeroTramite,
+                        fechaRegistro: registro.fechaRegistro,
+                        usuarioRegistro: registro.usuarioRegistro,
+                        timestamp: registro.timestamp
+                    };
+                } else {
+                    this.registrosObservadosGlobales.push({
+                        nroPlaca: registro.nroPlaca,
+                        observacion: registro.observacion,
+                        numeroTramite: registro.numeroTramite,
+                        fechaRegistro: registro.fechaRegistro,
+                        usuarioRegistro: registro.usuarioRegistro,
+                        timestamp: registro.timestamp
+                    });
+                }
+                
+                // Guardar en Supabase si está conectado
+                if (this.supabaseManager.isConnected) {
+                    try {
+                        await this.supabaseManager.insertObservacion({
+                            nroPlaca: registro.nroPlaca,
+                            numeroTramite: registro.numeroTramite,
+                            observacion: registro.observacion,
+                            usuarioRegistro: registro.usuarioRegistro
+                        });
+                    } catch (error) {
+                        console.error('Error guardando observación en Supabase:', error);
+                    }
+                }
+            }
+            
+            async cargarObservacionesGlobales() {
+                try {
+                    // Intentar cargar de Supabase primero
+                    if (this.supabaseManager.isConnected) {
+                        const observacionesSupabase = await this.supabaseManager.getAllObservaciones();
+                        this.registrosObservadosGlobales = observacionesSupabase.map(obs => ({
+                            id: obs.id,
+                            nroPlaca: obs.nro_placa,
+                            numeroTramite: obs.numero_tramite,
+                            observacion: obs.observacion,
+                            fechaRegistro: obs.created_at ? new Date(obs.created_at).toLocaleString('es-ES') : new Date().toLocaleString('es-ES'),
+                            usuarioRegistro: obs.usuario_registro || 'Anónimo',
+                            timestamp: new Date(obs.created_at || Date.now()).getTime()
+                        }));
+                    } else {
+                        // Fallback a localStorage
+                        const observaciones = localStorage.getItem('observaciones_globales');
+                        this.registrosObservadosGlobales = observaciones ? JSON.parse(observaciones) : [];
+                    }
+                } catch (error) {
+                    console.error('Error cargando observaciones globales:', error);
+                    this.registrosObservadosGlobales = [];
+                }
+            }
+            
+            async guardarObservacionesGlobales() {
+                try {
+                    if (this.supabaseManager.isConnected) {
+                        // Sincronizar todas las observaciones con Supabase
+                        for (const obs of this.registrosObservadosGlobales) {
+                            // Verificar si ya existe en Supabase
+                            const observacionesSupabase = await this.supabaseManager.getAllObservaciones();
+                            const existe = observacionesSupabase.find(o => 
+                                o.nro_placa === obs.nroPlaca && 
+                                o.usuario_registro === obs.usuarioRegistro &&
+                                o.observacion === obs.observacion
+                            );
+                            
+                            if (!existe && !obs.id) {
+                                const resultado = await this.supabaseManager.insertObservacion({
+                                    nroPlaca: obs.nroPlaca,
+                                    numeroTramite: obs.numeroTramite,
+                                    observacion: obs.observacion,
+                                    usuarioRegistro: obs.usuarioRegistro
+                                });
+                                
+                                if (resultado) {
+                                    obs.id = resultado.id;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Siempre guardar localmente como backup
+                    localStorage.setItem('observaciones_globales', JSON.stringify(this.registrosObservadosGlobales));
+                    
+                } catch (error) {
+                    console.error('Error guardando observaciones globales:', error);
+                    // Fallback a localStorage
+                    localStorage.setItem('observaciones_globales', JSON.stringify(this.registrosObservadosGlobales));
+                }
+            }
+            
+            verificarPlacaObservada(placa) {
+                return this.registrosObservadosGlobales.find(obs => obs.nroPlaca === placa);
+            }
+            
+            async eliminarTodosRegistrosObservados() {
+                const cantidad = this.registrosObservadosGlobales.length;
+                
+                if (cantidad === 0) {
+                    this.mostrarAlerta('Información', 'No hay registros observados para eliminar', 'info');
+                    return;
+                }
+                
+                if (confirm(`¿Está seguro de eliminar TODOS los registros observados (${cantidad} en total)?\n\n⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER ⚠️`)) {
+                    // Eliminar de Supabase si está conectado
+                    if (this.supabaseManager.isConnected) {
+                        try {
+                            await this.supabaseManager.deleteAllObservaciones();
+                        } catch (error) {
+                            console.error('Error eliminando observaciones de Supabase:', error);
+                        }
+                    }
+                    
+                    this.registrosObservadosGlobales = [];
+                    await this.guardarObservacionesGlobales();
+                    
+                    this.actualizarContadores();
+                    this.mostrarRegistrosObservados();
+                    
+                    this.mostrarAlerta('Éxito', `Se eliminaron ${cantidad} registros observados`, 'success');
+                }
+            }
+            
+            limpiarTextarea() {
+                document.getElementById('inputDatos').value = '';
+                document.getElementById('inputDatos').focus();
+                this.mostrarAlerta('Información', 'Área de texto limpiada', 'info');
+            }
+            
+            limpiarFormulario() {
+                document.getElementById('inputDatos').value = '';
+                
+                document.getElementById('estadoTramite').textContent = '---';
+                document.getElementById('estadoTramite').className = 'display-value empty';
+                
+                document.getElementById('numeroTramite').textContent = '---';
+                document.getElementById('numeroTramite').className = 'display-value empty';
+                
+                document.getElementById('tipoHR').textContent = '---';
+                document.getElementById('tipoHR').className = 'display-value empty';
+                
+                document.getElementById('nroPlaca').textContent = '---';
+                document.getElementById('nroPlaca').className = 'display-value empty';
+                
+                document.getElementById('placaBox').className = 'status-box placa-default';
+                document.getElementById('placaStatus').textContent = '---';
+                
+                document.getElementById('empresaBox').className = 'status-box empresa-default';
+                document.getElementById('empresaNombre').textContent = '---';
+                
+                document.getElementById('btnRegistrar').disabled = true;
+                document.getElementById('btnObservar').disabled = true;
+                
+                this.datosActuales = null;
+                this.placaEncontrada = null;
+                this.observacionSeleccionada = null;
+            }
+            
+            cargarRegistrosDesdeLocalStorage() {
+                try {
+                    const registrosAceptados = localStorage.getItem('registrosAceptados');
+                    const registrosObservados = localStorage.getItem('registrosObservados');
+                    
+                    this.registrosAceptados = registrosAceptados ? JSON.parse(registrosAceptados) : [];
+                    this.registrosObservados = registrosObservados ? JSON.parse(registrosObservados) : [];
+                } catch (error) {
+                    console.error('Error cargando registros:', error);
+                    this.registrosAceptados = [];
+                    this.registrosObservados = [];
+                }
+            }
+            
+            guardarRegistrosEnLocalStorage() {
+                try {
+                    localStorage.setItem('registrosAceptados', JSON.stringify(this.registrosAceptados));
+                    localStorage.setItem('registrosObservados', JSON.stringify(this.registrosObservados));
+                } catch (error) {
+                    console.error('Error guardando registros:', error);
+                }
+            }
+            
+            actualizarContadores() {
+                document.getElementById('acceptedCount').textContent = this.registrosAceptados.length;
+                document.getElementById('observedCount').textContent = this.registrosObservadosGlobales.length;
+            }
+            
+            mostrarRegistrosAceptados() {
+                const acceptedList = document.getElementById('acceptedList');
+                
+                if (this.registrosAceptados.length === 0) {
+                    acceptedList.innerHTML = `
+                        <div class="no-records">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>No hay registros aceptados</h3>
+                            <p>Los registros aceptados aparecerán aquí</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                this.registrosAceptados.forEach((registro, index) => {
+                    html += `
+                        <div class="record-item accepted" data-index="${index}" data-tipo="aceptado">
+                            <button class="delete-record-btn" onclick="sistema.eliminarRegistroIndividual(${index}, 'aceptado')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="record-placa">${registro.nroPlaca}</div>
+                            <div class="record-details">
+                                <strong>Trámite:</strong> ${registro.numeroTramite}<br>
+                                <strong>Empresa:</strong> ${registro.empresa}<br>
+                                <strong>Estado:</strong> ${registro.estadoTramite}<br>
+                                <strong>Tipo HR:</strong> ${registro.tipoHR}<br>
+                                <strong>Fecha:</strong> ${registro.fechaRegistro}<br>
+                                <strong>Usuario:</strong> ${registro.usuarioRegistro}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                acceptedList.innerHTML = html;
+                document.getElementById('acceptedCount').textContent = this.registrosAceptados.length;
+            }
+            
+            mostrarRegistrosObservados() {
+                const observedList = document.getElementById('observedList');
+                
+                if (this.registrosObservadosGlobales.length === 0) {
+                    observedList.innerHTML = `
+                        <div class="no-records">
+                            <i class="fas fa-eye"></i>
+                            <h3>No hay registros observados</h3>
+                            <p>Los registros observados compartidos aparecerán aquí</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                this.registrosObservadosGlobales.forEach((registro, index) => {
+                    html += `
+                        <div class="record-item observed" data-index="${index}">
+                            <button class="delete-record-btn" onclick="sistema.eliminarObservacionGlobal(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="record-placa">${registro.nroPlaca}</div>
+                            <div class="record-details">
+                                <strong>Observación:</strong> ${registro.observacion}<br>
+                                <strong>Trámite:</strong> ${registro.numeroTramite}<br>
+                                <strong>Fecha:</strong> ${registro.fechaRegistro}<br>
+                                <strong>Reportado por:</strong> ${registro.usuarioRegistro}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                observedList.innerHTML = html;
+                document.getElementById('observedCount').textContent = this.registrosObservadosGlobales.length;
+            }
+            
+            async eliminarObservacionGlobal(index) {
+                if (!this.authManager.isCurrentUserAdmin()) {
+                    this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede eliminar observaciones', 'warning');
+                    return;
+                }
+                
+                if (confirm('¿Está seguro de eliminar esta observación?')) {
+                    const observacion = this.registrosObservadosGlobales[index];
+                    
+                    // Eliminar de Supabase si está conectado
+                    if (this.supabaseManager.isConnected && observacion.id) {
+                        try {
+                            await this.supabaseManager.deleteObservacion(observacion.id);
+                        } catch (error) {
+                            console.error('Error eliminando observación de Supabase:', error);
+                        }
+                    }
+                    
+                    this.registrosObservadosGlobales.splice(index, 1);
+                    await this.guardarObservacionesGlobales();
+                    this.mostrarRegistrosObservados();
+                    this.actualizarContadores();
+                    this.mostrarAlerta('Éxito', 'Observación eliminada', 'success');
+                }
+            }
+            
+            eliminarRegistroIndividual(index, tipo) {
+                if (confirm(`¿Está seguro de eliminar este registro ${tipo === 'aceptado' ? 'aceptado' : 'observado'}?`)) {
+                    if (tipo === 'aceptado') {
+                        const registroEliminado = this.registrosAceptados[index];
+                        
+                        const indexGlobal = this.registrosAceptadosGlobales.findIndex(
+                            item => item.nroPlaca === registroEliminado.nroPlaca &&
+                                item.usuarioRegistro === registroEliminado.usuarioRegistro
+                        );
+                        if (indexGlobal !== -1) {
+                            this.registrosAceptadosGlobales.splice(indexGlobal, 1);
+                            this.guardarAceptadosGlobales();
+                        }
+                        
+                        this.registrosAceptados.splice(index, 1);
+                    } else {
+                        this.registrosObservados.splice(index, 1);
+                    }
+                    
+                    this.guardarRegistrosEnLocalStorage();
+                    this.actualizarContadores();
+                    
+                    if (tipo === 'aceptado') {
+                        this.mostrarRegistrosAceptados();
+                    } else {
+                        this.mostrarRegistrosObservados();
+                    }
+                    
+                    this.mostrarAlerta('Éxito', 'Registro eliminado correctamente', 'success');
+                }
+            }
+            
+            eliminarTodosRegistros(tipo) {
+                const cantidad = tipo === 'aceptado' ? this.registrosAceptados.length : this.registrosObservados.length;
+                
+                if (cantidad === 0) {
+                    this.mostrarAlerta('Información', `No hay registros ${tipo === 'aceptado' ? 'aceptados' : 'observados'} para eliminar`, 'info');
+                    return;
+                }
+                
+                if (confirm(`¿Está seguro de eliminar TODOS los registros ${tipo === 'aceptado' ? 'aceptados' : 'observados'} (${cantidad} en total)?\n\n⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER ⚠️`)) {
+                    if (tipo === 'aceptado') {
+                        this.registrosAceptados.forEach(registro => {
+                            const indexGlobal = this.registrosAceptadosGlobales.findIndex(
+                                item => item.nroPlaca === registro.nroPlaca &&
+                                    item.usuarioRegistro === registro.usuarioRegistro
+                            );
+                            if (indexGlobal !== -1) {
+                                this.registrosAceptadosGlobales.splice(indexGlobal, 1);
+                            }
+                        });
+                        this.guardarAceptadosGlobales();
+                        
+                        this.registrosAceptados = [];
+                    } else {
+                        this.registrosObservados = [];
+                    }
+                    
+                    this.guardarRegistrosEnLocalStorage();
+                    this.actualizarContadores();
+                    
+                    if (tipo === 'aceptado') {
+                        this.mostrarRegistrosAceptados();
+                    } else {
+                        this.mostrarRegistrosObservados();
+                    }
+                    
+                    this.mostrarAlerta('Éxito', `Se eliminaron ${cantidad} registros ${tipo === 'aceptado' ? 'aceptados' : 'observados'}`, 'success');
+                }
+            }
+            
+            exportarAExcel(tipo) {
+                let registros;
+                let nombreTipo;
+                
+                if (tipo === 'aceptados') {
+                    registros = this.registrosAceptados;
+                    nombreTipo = 'aceptados';
+                } else {
+                    if (!this.authManager.isCurrentUserAdmin()) {
+                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede exportar registros observados', 'warning');
+                        return;
+                    }
+                    registros = this.registrosObservadosGlobales;
+                    nombreTipo = 'observados';
+                }
+                
+                if (registros.length === 0) {
+                    this.mostrarAlerta('Advertencia', `No hay registros ${nombreTipo} para exportar`, 'warning');
+                    return;
+                }
+                
+                try {
+                    const datos = registros.map(registro => [
+                        registro.nroPlaca,
+                        registro.numeroTramite || 'N/A',
+                        registro.empresa || 'N/A',
+                        registro.estadoTramite || 'N/A',
+                        registro.tipoHR || 'N/A',
+                        registro.observacion || '',
+                        registro.fechaRegistro,
+                        registro.usuarioRegistro || 'N/A'
+                    ]);
+                    
+                    const headers = [
+                        'PLACA',
+                        'N° TRÁMITE',
+                        'EMPRESA',
+                        'ESTADO',
+                        'TIPO HR',
+                        'OBSERVACIÓN',
+                        'FECHA REGISTRO',
+                        'USUARIO'
+                    ];
+                    
+                    datos.unshift(headers);
+                    
+                    const worksheet = XLSX.utils.aoa_to_sheet(datos);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, `Registros_${nombreTipo}`);
+                    
+                    const fecha = new Date().toISOString().slice(0, 10);
+                    const nombreArchivo = `registros_${nombreTipo}_${fecha}.xlsx`;
+                    
+                    XLSX.writeFile(workbook, nombreArchivo);
+                    
+                    this.mostrarAlerta('Éxito', `Se exportaron ${registros.length} registros ${nombreTipo} a Excel`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error exportando a Excel:', error);
+                    this.mostrarAlerta('Error', 'No se pudo exportar a Excel: ' + error.message, 'error');
+                }
+            }
+            
+            enviarRegistrosAceptados() {
+                if (this.registrosAceptados.length === 0) {
+                    this.mostrarAlerta('Advertencia', 'No hay registros aceptados para enviar', 'warning');
+                    return;
+                }
+                
+                const mensaje = `¿Está seguro de enviar ${this.registrosAceptados.length} registro(s) aceptado(s)?\n\n✅ Esto realizará las siguientes acciones:\n1. Se descargará un archivo Excel con los registros\n2. Los registros se eliminarán del sistema`;
+                
+                document.getElementById('sendModalMessage').textContent = mensaje;
+                document.getElementById('sendProgress').style.display = 'none';
+                document.getElementById('sendModalConfirm').disabled = false;
+                document.getElementById('sendModalConfirm').innerHTML = '<i class="fas fa-paper-plane"></i> ENVIAR';
+                
+                document.getElementById('sendModal').style.display = 'flex';
+            }
+            
+            cerrarModalEnvio() {
+                document.getElementById('sendModal').style.display = 'none';
+            }
+            
+            confirmarEnvio() {
+                const botonConfirmar = document.getElementById('sendModalConfirm');
+                botonConfirmar.disabled = true;
+                botonConfirmar.innerHTML = '<div class="spinner"></div> ENVIANDO...';
+                
+                document.getElementById('sendProgress').style.display = 'block';
+                
+                setTimeout(() => {
+                    this.procesarEnvioCorreo();
+                }, 1000);
+            }
+            
+            procesarEnvioCorreo() {
+                try {
+                    const cantidadRegistros = this.registrosAceptados.length;
+                    const fechaEnvio = new Date().toLocaleString('es-ES');
+                    const usuario = this.authManager.getCurrentUser();
+                    
+                    if (cantidadRegistros === 0) {
+                        this.cerrarModalEnvio();
+                        this.mostrarAlerta('Advertencia', 'No hay registros aceptados para enviar', 'warning');
+                        return;
+                    }
+                    
+                    // Crear archivo Excel
+                    const datos = this.registrosAceptados.map(registro => [
+                        registro.nroPlaca,
+                        registro.numeroTramite || 'N/A',
+                        registro.empresa || 'N/A',
+                        registro.estadoTramite || 'N/A',
+                        registro.tipoHR || 'N/A',
+                        registro.fechaRegistro,
+                        registro.usuarioRegistro || 'N/A'
+                    ]);
+                    
+                    const headers = [
+                        'PLACA',
+                        'N° TRÁMITE',
+                        'EMPRESA',
+                                'ESTADO',
+                                'TIPO HR',
+                                'FECHA REGISTRO',
+                                'USUARIO'
+                            ];
+                            
+                            datos.unshift(headers);
+                            
+                            const worksheet = XLSX.utils.aoa_to_sheet(datos);
+                            const workbook = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(workbook, worksheet, 'Registros_Aceptados');
+                            
+                            const fecha = new Date().toISOString().slice(0, 10);
+                            const nombreArchivo = `registros_aceptados_${fecha}_${usuario.replace(/\s+/g, '_')}.xlsx`;
+                            
+                            // Descargar el archivo
+                            XLSX.writeFile(workbook, nombreArchivo);
+                            
+                            // GUARDAR LOS REGISTROS QUE SE VAN A ELIMINAR PARA HISTORIAL
+                            const registrosEliminados = [...this.registrosAceptados];
+                            
+                            // 1. ELIMINAR registros aceptados locales
+                            this.registrosAceptados = [];
+                            this.guardarRegistrosEnLocalStorage();
+                            
+                            // 2. ELIMINAR las placas de registrosAceptadosGlobales para que puedan registrarse nuevamente
+                            registrosEliminados.forEach(registro => {
+                                const indexGlobal = this.registrosAceptadosGlobales.findIndex(
+                                    item => item.nroPlaca === registro.nroPlaca &&
+                                        item.usuarioRegistro === registro.usuarioRegistro &&
+                                        item.numeroTramite === registro.numeroTramite
+                                );
+                                
+                                if (indexGlobal !== -1) {
+                                    this.registrosAceptadosGlobales.splice(indexGlobal, 1);
+                                }
+                            });
+                            
+                            // Guardar los cambios en los registros globales
+                            this.guardarAceptadosGlobales();
+                            
+                            // Actualizar la interfaz
+                            this.mostrarRegistrosAceptados();
+                            this.actualizarContadores();
+                            
+                            this.cerrarModalEnvio();
+                            
+                            this.mostrarAlerta(
+                                'Éxito', 
+                                `✅ Se generó el archivo Excel con ${cantidadRegistros} registro(s) aceptado(s).\n\n📁 Archivo: ${nombreArchivo}\n\n✅ Las placas han sido liberadas y pueden registrarse nuevamente.`, 
+                                'success'
+                            );
+                            
+                        } catch (error) {
+                            console.error('Error procesando envío:', error);
+                            
+                            this.cerrarModalEnvio();
+                            
+                            this.mostrarAlerta(
+                                'Error', 
+                                `❌ Error al procesar el envío: ${error.message}\n\nLos registros no fueron eliminados.`, 
+                                'error'
+                            );
+                        }
+                    }
+                    
+                    limpiarTodosRegistrosAceptados() {
+                        if (this.registrosAceptados.length === 0 && this.registrosAceptadosGlobales.length === 0) {
+                            this.mostrarAlerta('Información', 'No hay registros aceptados para limpiar', 'info');
+                            return;
+                        }
+                        
+                        const cantidadLocal = this.registrosAceptados.length;
+                        const cantidadGlobal = this.registrosAceptadosGlobales.length;
+                        
+                        if (confirm(`¿Está seguro de limpiar TODOS los registros aceptados?\n\n📋 Registros locales: ${cantidadLocal}\n🌐 Registros globales: ${cantidadGlobal}\n\n⚠️ Esto permitirá que todas las placas se registren nuevamente.`)) {
+                            this.registrosAceptados = [];
+                            this.registrosAceptadosGlobales = [];
+                            
+                            this.guardarRegistrosEnLocalStorage();
+                            this.guardarAceptadosGlobales();
+                            
+                            this.actualizarContadores();
+                            this.mostrarRegistrosAceptados();
+                            
+                            this.mostrarAlerta('Éxito', `Se limpiaron ${cantidadLocal} registros locales y ${cantidadGlobal} registros globales. Todas las placas pueden registrarse nuevamente.`, 'success');
+                        }
+                    }
+                    
+                    s2ab(s) {
+                        const buf = new ArrayBuffer(s.length);
+                        const view = new Uint8Array(buf);
+                        for (let i = 0; i < s.length; i++) {
+                            view[i] = s.charCodeAt(i) & 0xFF;
+                        }
+                        return buf;
+                    }
+                    
+                    mostrarAlerta(titulo, mensaje, tipo = 'info') {
+                        const alerta = document.createElement('div');
+                        
+                        let clase = 'alert-info';
+                        switch(tipo) {
+                            case 'success': clase = 'alert-success'; break;
+                            case 'error': clase = 'alert-error'; break;
+                            case 'warning': clase = 'alert-warning'; break;
+                        }
+                        
+                        alerta.className = `alert ${clase}`;
+                        
+                        let icono = 'fas fa-info-circle';
+                        if (tipo === 'success') icono = 'fas fa-check-circle';
+                        if (tipo === 'error') icono = 'fas fa-times-circle';
+                        if (tipo === 'warning') icono = 'fas fa-exclamation-triangle';
+                        
+                        alerta.innerHTML = `
+                            <i class="${icono}" style="font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 14px; margin-bottom: 4px; font-weight: 700;">${titulo}</div>
+                                <div style="font-size: 13px; opacity: 0.9;">${mensaje}</div>
+                            </div>
+                        `;
+                        
+                        document.body.appendChild(alerta);
+                        
+                        setTimeout(() => {
+                            alerta.style.animation = 'slideOutAlert 0.3s ease-out';
+                            setTimeout(() => {
+                                if (alerta.parentNode) {
+                                    alerta.parentNode.removeChild(alerta);
+                                }
+                            }, 300);
+                        }, 4000);
+                    }
+                }
+
+        // Inicializar el sistema
+        let sistema;
+        document.addEventListener('DOMContentLoaded', () => {
+            sistema = new SistemaVerificacionPlacas();
+            console.log('✅ Sistema de Verificación de Placas inicializado con Supabase');
+            
+            window.sistema = sistema;
+        });
+    </script>
+</body>
+</html>
