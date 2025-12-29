@@ -50,7 +50,6 @@
                 <div class="user-info">
                     <i class="fas fa-user-circle"></i>
                     <span id="currentUser">Usuario</span>
-                    <span id="userRoleBadge" class="user-role" style="display: none; background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px;">ADMIN</span>
                 </div>
             </div>
             
@@ -160,114 +159,65 @@
             </div>
         </div>
 
-        <!-- Contenido de Pestaña 2: Base de Datos -->
+        <!-- Contenido de Pestaña 2: Base de Datos (SIMPLIFICADO) -->
         <div class="tab-content" id="databaseTab">
             <div class="database-container">
                 <!-- Search Bar -->
                 <div class="search-bar">
                     <div class="search-container">
-                        <input type="text" id="buscarPlaca" class="search-input restricted-input" placeholder="Buscar placa, empresa o asociación...">
-                        <button id="btnBuscar" class="btn btn-primary restricted-btn">
+                        <input type="text" id="buscarPlaca" class="search-input" placeholder="Buscar placa, empresa o asociación...">
+                        <button id="btnBuscar" class="btn btn-primary">
                             <i class="fas fa-search"></i> BUSCAR
                         </button>
-                        <button id="btnLimpiarBusqueda" class="btn btn-secondary restricted-btn">
+                        <button id="btnLimpiarBusqueda" class="btn btn-secondary">
                             <i class="fas fa-times"></i> LIMPIAR
+                        </button>
+                        <button id="btnOffline" class="btn btn-warning">
+                            <i class="fas fa-download"></i> MODO OFFLINE
                         </button>
                     </div>
                 </div>
 
-                <!-- Main Content -->
-                <div class="main-content-db">
-                    <!-- Left Column: Registration -->
-                    <div class="left-column">
-                        <div class="registration-panel">
-                            <div class="registration-header">
-                                <i class="fas fa-plus-circle"></i>
-                                REGISTRO DE PLACAS
-                            </div>
-                            <div class="registration-body">
-                                <div class="form-group-db">
-                                    <label class="form-label-db">PLACA:</label>
-                                    <input type="text" id="placa" class="form-control-db restricted-input" placeholder="Ej: 5000-XKN, ABC-123" maxlength="20">
-                                </div>
-                                
-                                <div class="form-group-db">
-                                    <label class="form-label-db">EMPRESA:</label>
-                                    <input type="text" id="empresa" class="form-control-db restricted-input" placeholder="Ej: DGS OIL LTDA." maxlength="100">
-                                </div>
-                                
-                                <div class="form-group-db">
-                                    <label class="form-label-db">ASOCIACIÓN:</label>
-                                    <input type="text" id="asociacion" class="form-control-db restricted-input" placeholder="Ej: DGS OIL LTDA." maxlength="100">
-                                </div>
-                                
-                                <div style="display: flex; gap: 12px; margin-top: 20px;">
-                                    <button id="btnGuardar" class="btn btn-primary restricted-btn" style="flex: 1 1 0%;"><i class="fas fa-save"></i> GUARDAR</button>
-                                    <button id="btnEditar" class="btn btn-info restricted-btn" style="flex: 1;"><i class="fas fa-edit"></i> EDITAR</button>
-                                    <button id="btnLimpiarForm" class="btn btn-secondary restricted-btn" style="flex: 1;">
-                                        <i class="fas fa-broom"></i> LIMPIAR
-                                    </button>
-                                </div>
-                                
-                                <div class="db-info">
-                                    <i class="fas fa-database"></i> 
-                                    <span id="dbStatusText">Base de datos: Multi-usuario - Datos compartidos entre todos los usuarios</span>
-                                </div>
+                <!-- Contenedor principal simplificado -->
+                <div class="table-section-full">
+                    <div class="table-header-db">
+                        <div class="table-title-db">
+                            <i class="fas fa-list"></i>
+                            REGISTROS DE PLACAS
+                            <span id="tableInfo" class="badge badge-primary">0 registros</span>
+                        </div>
+                        <div class="table-actions">
+                            <!-- Botones eliminados según requerimiento -->
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper-full">
+                        <table id="placasTable" class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>PLACA</th>
+                                    <th>EMPRESA</th>
+                                    <th>ASOCIACIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="placasTableBody">
+                                <!-- Los registros se cargarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="stats-row">
+                        <div class="stats-info">
+                            <i class="fas fa-database"></i>
+                            <span id="statsText">Total de registros en la base de datos</span>
+                        </div>
+                        <div class="stats-numbers">
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalRegistros">0</span>
+                                <span class="stat-label">TOTAL</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Right Column: Table -->
-                    <div class="table-section" style="height: 100%;">
-                        <div class="table-header-db">
-                            <div class="table-title-db">
-                                <i class="fas fa-list"></i>
-                                REGISTROS DE PLACAS
-                                <span id="tableInfo" class="badge badge-primary">0 registros</span>
-                            </div>
-                        </div>
-                        
-                        <div class="table-wrapper" style="height: calc(100% - 120px);">
-                            <table id="placasTable" class="db-table">
-                                <thead>
-                                    <tr>
-                                        <th>PLACA</th>
-                                        <th>EMPRESA</th>
-                                        <th>ASOCIACIÓN</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="placasTableBody">
-                                    <!-- Los registros se cargarán aquí -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="stats-row">
-                            <div class="stats-info">
-                                <i class="fas fa-database"></i>
-                                <span id="statsText">Total de registros en la base de datos</span>
-                            </div>
-                            <div class="stats-numbers">
-                                <div class="stat-item">
-                                    <span class="stat-value" id="totalRegistros">0</span>
-                                    <span class="stat-label">TOTAL</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Controls Row -->
-                <div class="controls-row">
-                    <button id="btnExportarExcel" class="btn btn-success restricted-btn">
-                        <i class="fas fa-file-excel"></i> EXPORTAR A EXCEL
-                    </button>
-                    <button id="btnImportarExcel" class="btn btn-primary restricted-btn">
-                        <i class="fas fa-file-import"></i> IMPORTAR DE EXCEL
-                    </button>
-                    <button id="btnEliminarTodos" class="btn btn-danger restricted-btn">
-                        <i class="fas fa-skull-crossbones"></i> ELIMINAR TODO
-                    </button>
                 </div>
             </div>
         </div>
@@ -319,11 +269,8 @@
                             </div>
                         </div>
                         <div class="records-actions">
-                            <button id="btnExportObserved" class="export-btn restricted-btn">
+                            <button id="btnExportObserved" class="export-btn">
                                 <i class="fas fa-file-excel"></i> EXPORTAR
-                            </button>
-                            <button id="btnDeleteObserved" class="delete-all-btn restricted-btn">
-                                <i class="fas fa-trash"></i> ELIMINAR TODOS
                             </button>
                         </div>
                     </div>
@@ -449,7 +396,7 @@
             </div>
             <div class="modal-footer">
                 <button id="importCancel" class="btn btn-secondary">CANCELAR</button>
-                <button id="importConfirm" class="btn btn-primary restricted-btn"><i class="fas fa-upload"></i> IMPORTAR</button>
+                <button id="importConfirm" class="btn btn-primary"><i class="fas fa-upload"></i> IMPORTAR</button>
             </div>
         </div>
     </div>
@@ -465,7 +412,7 @@
             </div>
             <div class="modal-footer">
                 <button id="confirmModalCancel" class="btn btn-secondary">CANCELAR</button>
-                <button id="confirmModalConfirm" class="btn btn-danger restricted-btn">CONFIRMAR</button>
+                <button id="confirmModalConfirm" class="btn btn-danger">CONFIRMAR</button>
             </div>
         </div>
     </div>
@@ -485,79 +432,30 @@
         </div>
     </div>
 
-    <div id="sheetSelectModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span><i class="fas fa-table"></i> SELECCIONAR HOJA DE TRABAJO</span>
-                <button class="modal-close" id="sheetSelectModalClose">×</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 15px; font-size: 14px;">
-                    Se encontraron múltiples hojas en el archivo Excel. Seleccione la hoja que desea importar:
-                </p>
-                <div id="sheetList" style="max-height: 200px; overflow-y: auto;">
-                    <!-- Lista de hojas se cargará aquí -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="sheetSelectCancel" class="btn btn-secondary">CANCELAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmación de envío -->
-    <div id="sendModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span><i class="fas fa-paper-plane"></i> ENVIAR REGISTROS ACEPTADOS</span>
-                <button class="modal-close" id="sendModalClose">×</button>
-            </div>
-            <div class="modal-body">
-                <p id="sendModalMessage" style="font-size: 15px; line-height: 1.5;"></p>
-                <div id="sendProgress" style="display: none; margin-top: 15px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="spinner"></div>
-                        <span>Enviando correo electrónico...</span>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 13px; color: #666;">
-                        <i class="fas fa-info-circle"></i>
-                        Por favor espere, esto puede tomar unos segundos
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="sendModalCancel" class="btn btn-secondary">CANCELAR</button>
-                <button id="sendModalConfirm" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> ENVIAR
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts de la aplicación -->
     <script src="database.js"></script>
     <script src="supabase.js"></script>
     <script>
         // ============================================
-        // MÓDULO DE AUTENTICACIÓN Y USUARIOS - MODIFICADO
+        // MÓDULO DE AUTENTICACIÓN Y USUARIOS - SIMPLIFICADO
         // ============================================
         class AuthenticationManager {
             constructor() {
-                // Usuarios predefinidos - jconde es administrador
+                // Usuarios predefinidos - TODOS pueden acceder a todo
                 this.users = [
-                    { username: 'admined6', password: 'c0rp0rac10n', name: 'YPFB - ED-6', isAdmin: true },
-                    { username: 'jconde', password: 'jcondeed6', name: 'Juan Jose Conde Lecoña', isAdmin: true },
-                    { username: 'arcortez', password: 'arcortez123', name: 'Andrea del Rosario Cortez Castro', isAdmin: false },
-                    { username: 'amamaniv', password: 'amamaniv123', name: 'Ayde Mamani Villca', isAdmin: false },
-                    { username: 'btardio', password: 'btardio123', name: 'Bryan Antonio Tardio Antelo', isAdmin: false },
-                    { username: 'cchacon', password: 'cchacon123', name: 'Cristhian Chacon Avalos', isAdmin: false },
-                    { username: 'gespinar', password: 'gespinar123', name: 'Geraldine Tania Espinar Rea', isAdmin: false },
-                    { username: 'jchavezm', password: 'jchavezm123', name: 'Judith Chavez Montalvo', isAdmin: false },
-                    { username: 'kcornejo', password: 'kcornejo123', name: 'Khana Wara Cornejo Banda', isAdmin: false },
-                    { username: 'rmcamacho', password: 'rmcamacho123', name: 'Raquel Miriam Camacho Borda', isAdmin: false },
-                    { username: 'tmaldonado', password: 'tmaldonado123', name: 'Tatiana Alejandra Maldonado Zapata', isAdmin: false },
-                    { username: 'rdipp', password: 'rdipp123', name: 'Ramiro Martin Dipp Idiaquez', isAdmin: false },
-                    { username: 'knunez', password: 'knunez123', name: 'Karem Roxana Nuñez Gonzales', isAdmin: false }
+                    { username: 'admined6', password: 'c0rp0rac10n', name: 'YPFB - ED-6' },
+                    { username: 'jconde', password: 'jcondeed6', name: 'Juan Jose Conde Lecoña' },
+                    { username: 'arcortez', password: 'arcortez123', name: 'Andrea del Rosario Cortez Castro' },
+                    { username: 'amamaniv', password: 'amamaniv123', name: 'Ayde Mamani Villca' },
+                    { username: 'btardio', password: 'btardio123', name: 'Bryan Antonio Tardio Antelo' },
+                    { username: 'cchacon', password: 'cchacon123', name: 'Cristhian Chacon Avalos' },
+                    { username: 'gespinar', password: 'gespinar123', name: 'Geraldine Tania Espinar Rea' },
+                    { username: 'jchavezm', password: 'jchavezm123', name: 'Judith Chavez Montalvo' },
+                    { username: 'kcornejo', password: 'kcornejo123', name: 'Khana Wara Cornejo Banda' },
+                    { username: 'rmcamacho', password: 'rmcamacho123', name: 'Raquel Miriam Camacho Borda' },
+                    { username: 'tmaldonado', password: 'tmaldonado123', name: 'Tatiana Alejandra Maldonado Zapata' },
+                    { username: 'rdipp', password: 'rdipp123', name: 'Ramiro Martin Dipp Idiaquez' },
+                    { username: 'knunez', password: 'knunez123', name: 'Karem Roxana Nuñez Gonzales' }
                 ];
                 
                 this.currentUser = null;
@@ -612,7 +510,6 @@
                     this.currentUser = {
                         username: user.username,
                         name: user.name,
-                        isAdmin: user.isAdmin || false,
                         loginTime: new Date().toISOString()
                     };
                     
@@ -653,109 +550,26 @@
             }
             
             updateUserInterface() {
-                // Mostrar badge de administrador si corresponde
-                const roleBadge = document.getElementById('userRoleBadge');
-                if (this.currentUser.isAdmin) {
-                    roleBadge.textContent = 'ADMIN';
-                    roleBadge.style.display = 'inline-block';
-                    roleBadge.style.backgroundColor = '#27ae60'; // Verde
-                } else {
-                    roleBadge.style.display = 'none';
-                }
+                // TODOS los usuarios tienen acceso completo
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.disabled = false;
+                    tab.style.opacity = '1';
+                    tab.style.cursor = 'pointer';
+                    tab.title = '';
+                });
                 
-                // Aplicar restricciones según el rol
-                this.applyUserRestrictions();
-            }
-            
-            applyUserRestrictions() {
-                const isAdmin = this.currentUser.isAdmin;
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.title = '';
+                });
                 
-                // 1. Pestaña Base de Datos
-                if (!isAdmin) {
-                    // Bloquear pestaña Base de Datos
-                    const databaseTabButton = document.getElementById('databaseTabButton');
-                    databaseTabButton.disabled = true;
-                    databaseTabButton.style.opacity = '0.5';
-                    databaseTabButton.style.cursor = 'not-allowed';
-                    databaseTabButton.title = 'Acceso restringido - Solo administrador';
-                    
-                    // Bloquear todos los elementos con clase "restricted-btn" y "restricted-input"
-                    document.querySelectorAll('.restricted-btn').forEach(btn => {
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                        btn.style.cursor = 'not-allowed';
-                        btn.title = 'Acceso restringido - Solo administrador';
-                    });
-                    
-                    document.querySelectorAll('.restricted-input').forEach(input => {
-                        input.disabled = true;
-                        input.style.opacity = '0.5';
-                        input.style.cursor = 'not-allowed';
-                        input.placeholder = 'Acceso restringido - Solo administrador';
-                    });
-                    
-                    // Bloquear botones específicos en la pestaña de Registros
-                    const exportObservedBtn = document.getElementById('btnExportObserved');
-                    const deleteObservedBtn = document.getElementById('btnDeleteObserved');
-                    
-                    if (exportObservedBtn) {
-                        exportObservedBtn.disabled = true;
-                        exportObservedBtn.style.opacity = '0.5';
-                        exportObservedBtn.style.cursor = 'not-allowed';
-                        exportObservedBtn.title = 'Acceso restringido - Solo administrador';
-                    }
-                    
-                    if (deleteObservedBtn) {
-                        deleteObservedBtn.disabled = true;
-                        deleteObservedBtn.style.opacity = '0.5';
-                        deleteObservedBtn.style.cursor = 'not-allowed';
-                        deleteObservedBtn.title = 'Acceso restringido - Solo administrador';
-                    }
-                } else {
-                    // Para administrador, habilitar todo
-                    const databaseTabButton = document.getElementById('databaseTabButton');
-                    if (databaseTabButton) {
-                        databaseTabButton.disabled = false;
-                        databaseTabButton.style.opacity = '1';
-                        databaseTabButton.style.cursor = 'pointer';
-                        databaseTabButton.title = '';
-                    }
-                    
-                    document.querySelectorAll('.restricted-btn').forEach(btn => {
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.style.cursor = 'pointer';
-                        btn.title = '';
-                    });
-                    
-                    document.querySelectorAll('.restricted-input').forEach(input => {
-                        input.disabled = false;
-                        input.style.opacity = '1';
-                        input.style.cursor = 'text';
-                        input.placeholder = input.getAttribute('data-original-placeholder') || 
-                                          (input.id === 'placa' ? 'Ej: 5000-XKN, ABC-123' : 
-                                           input.id === 'buscarPlaca' ? 'Buscar placa, empresa o asociación...' : 
-                                           'Ej: DGS OIL LTDA.');
-                    });
-                    
-                    // Habilitar botones en Registros
-                    const exportObservedBtn = document.getElementById('btnExportObserved');
-                    const deleteObservedBtn = document.getElementById('btnDeleteObserved');
-                    
-                    if (exportObservedBtn) {
-                        exportObservedBtn.disabled = false;
-                        exportObservedBtn.style.opacity = '1';
-                        exportObservedBtn.style.cursor = 'pointer';
-                        exportObservedBtn.title = '';
-                    }
-                    
-                    if (deleteObservedBtn) {
-                        deleteObservedBtn.disabled = false;
-                        deleteObservedBtn.style.opacity = '1';
-                        deleteObservedBtn.style.cursor = 'pointer';
-                        deleteObservedBtn.title = '';
-                    }
-                }
+                document.querySelectorAll('input, textarea').forEach(input => {
+                    input.disabled = false;
+                    input.style.opacity = '1';
+                    input.style.cursor = 'text';
+                });
             }
             
             showAlert(titulo, mensaje, tipo = 'info') {
@@ -797,10 +611,6 @@
             
             getCurrentUser() {
                 return this.currentUser ? this.currentUser.name : 'Usuario';
-            }
-            
-            isCurrentUserAdmin() {
-                return this.currentUser ? this.currentUser.isAdmin : false;
             }
         }
 
@@ -885,9 +695,6 @@
                 // Inicializar Supabase primero
                 await this.supabaseManager.init();
                 
-                // Actualizar texto de estado de la base de datos
-                this.updateDatabaseStatusText();
-                
                 // Solo inicializar si hay usuario autenticado
                 if (this.authManager.currentUser) {
                     await this.cargarObservacionesGlobales();
@@ -904,21 +711,14 @@
                     this.configurarTabs();
                     this.inicializarBaseDeDatos();
                     this.bindSendButton();
-                    
-                    // Aplicar restricciones después de inicializar
-                    this.authManager.applyUserRestrictions();
+                    this.bindOfflineButton();
                 }
             }
             
-            updateDatabaseStatusText() {
-                const dbStatusElement = document.getElementById('dbStatusText');
-                if (!dbStatusElement) return;
-                
-                if (this.supabaseManager.isConnected) {
-                    dbStatusElement.innerHTML = '✅ Base de datos: Conectado a Supabase - Datos compartidos en tiempo real';
-                } else {
-                    dbStatusElement.innerHTML = '⚠️ Base de datos: Modo local - Sin conexión a Supabase';
-                }
+            bindOfflineButton() {
+                document.getElementById('btnOffline').addEventListener('click', () => {
+                    this.activarModoOffline();
+                });
             }
             
             bindSendButton() {
@@ -937,15 +737,48 @@
                 window.placasDatabaseApp = new PlacasDatabaseApp(this.supabaseManager);
             }
             
+            async activarModoOffline() {
+                try {
+                    const boton = document.getElementById('btnOffline');
+                    const textoOriginal = boton.innerHTML;
+                    
+                    boton.innerHTML = '<div class="spinner"></div> DESCARGANDO...';
+                    boton.disabled = true;
+                    
+                    // Descargar datos de Supabase a localStorage
+                    if (window.placasDatabaseApp && window.placasDatabaseApp.db) {
+                        const resultado = await window.placasDatabaseApp.db.descargarParaOffline();
+                        
+                        if (resultado.success) {
+                            this.mostrarAlerta(
+                                '✅ MODO OFFLINE ACTIVADO',
+                                `Se han descargado ${resultado.registros} registros a localStorage.\n\nEl sistema ahora funciona completamente en modo offline.`,
+                                'success'
+                            );
+                            
+                            // Actualizar contadores
+                            await window.placasDatabaseApp.cargarDatos();
+                        } else {
+                            this.mostrarAlerta('Error', resultado.message, 'error');
+                        }
+                    } else {
+                        this.mostrarAlerta('Error', 'Base de datos no inicializada', 'error');
+                    }
+                    
+                    boton.innerHTML = textoOriginal;
+                    boton.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error activando modo offline:', error);
+                    this.mostrarAlerta('Error', 'No se pudo activar el modo offline: ' + error.message, 'error');
+                    document.getElementById('btnOffline').innerHTML = '<i class="fas fa-download"></i> MODO OFFLINE';
+                    document.getElementById('btnOffline').disabled = false;
+                }
+            }
+            
             configurarTabs() {
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', (e) => {
-                        // Si el usuario no es admin y hace clic en la pestaña de Base de Datos
-                        if (tab.dataset.tab === 'database' && !this.authManager.isCurrentUserAdmin()) {
-                            this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede acceder a la Base de Datos', 'warning');
-                            return;
-                        }
-                        
                         const tabId = tab.dataset.tab;
                         const direction = this.themeManager.setTabDirection(this.themeManager.currentTab, tabId);
                         this.cambiarPestana(tabId, direction);
@@ -994,19 +827,7 @@
                 });
                 
                 document.getElementById('btnExportObserved').addEventListener('click', () => {
-                    if (!this.authManager.isCurrentUserAdmin()) {
-                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede exportar registros observados', 'warning');
-                        return;
-                    }
                     this.exportarAExcel('observados');
-                });
-                
-                document.getElementById('btnDeleteObserved').addEventListener('click', () => {
-                    if (!this.authManager.isCurrentUserAdmin()) {
-                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede eliminar registros observados', 'warning');
-                        return;
-                    }
-                    this.eliminarTodosRegistrosObservados();
                 });
                 
                 document.querySelectorAll('.observation-option').forEach(option => {
@@ -1029,11 +850,6 @@
                         this.procesarDatos();
                     }
                 });
-                
-                // Eventos para el modal de envío
-                document.getElementById('sendModalClose').addEventListener('click', () => this.cerrarModalEnvio());
-                document.getElementById('sendModalCancel').addEventListener('click', () => this.cerrarModalEnvio());
-                document.getElementById('sendModalConfirm').addEventListener('click', () => this.confirmarEnvio());
             }
             
             procesarDatos() {
@@ -1159,12 +975,8 @@
                         throw new Error('Base de datos no inicializada');
                     }
                     
-                    // Usar el método optimizado para verificar existencia
+                    // Usar el método mejorado para verificar existencia
                     this.placaEncontrada = await window.placasDatabaseApp.db.verificarPlacaExiste(placa);
-                    
-                    // DEBUG: Mostrar variantes generadas
-                    const variantes = PlacaValidator.generarVariantesBusqueda(placa);
-                    console.log(`🔍 Variantes generadas para "${placa}":`, variantes);
                     
                     // Actualizar la interfaz
                     const placaBox = document.getElementById('placaBox');
@@ -1205,12 +1017,17 @@
                     const placaBox = document.getElementById('placaBox');
                     const placaStatus = document.getElementById('placaStatus');
                     
-                    placaBox.className = 'status-box placa-notfound';
-                    placaStatus.textContent = 'ERROR EN CONSULTA';
-                    placaStatus.style.color = 'var(--danger)';
+                    placaBox.className = 'status-box placa-default';
+                    placaStatus.textContent = '---';
+                    placaStatus.style.color = '';
                     
                     document.getElementById('btnRegistrar').disabled = true;
                     document.getElementById('btnObservar').disabled = true;
+                    
+                    // Mostrar alerta solo si es un error crítico
+                    if (error.message !== 'Base de datos no inicializada') {
+                        this.mostrarAlerta('Error', 'No se pudo conectar con la base de datos', 'error');
+                    }
                 }
             }
 
@@ -1506,34 +1323,6 @@
                 return this.registrosObservadosGlobales.find(obs => obs.nroPlaca === placa);
             }
             
-            async eliminarTodosRegistrosObservados() {
-                const cantidad = this.registrosObservadosGlobales.length;
-                
-                if (cantidad === 0) {
-                    this.mostrarAlerta('Información', 'No hay registros observados para eliminar', 'info');
-                    return;
-                }
-                
-                if (confirm(`¿Está seguro de eliminar TODOS los registros observados (${cantidad} en total)?\n\n⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER ⚠️`)) {
-                    // Eliminar de Supabase si está conectado
-                    if (this.supabaseManager.isConnected) {
-                        try {
-                            await this.supabaseManager.deleteAllObservaciones();
-                        } catch (error) {
-                            console.error('Error eliminando observaciones de Supabase:', error);
-                        }
-                    }
-                    
-                    this.registrosObservadosGlobales = [];
-                    await this.guardarObservacionesGlobales();
-                    
-                    this.actualizarContadores();
-                    this.mostrarRegistrosObservados();
-                    
-                    this.mostrarAlerta('Éxito', `Se eliminaron ${cantidad} registros observados`, 'success');
-                }
-            }
-            
             limpiarTextarea() {
                 document.getElementById('inputDatos').value = '';
                 document.getElementById('inputDatos').focus();
@@ -1653,9 +1442,6 @@
                 this.registrosObservadosGlobales.forEach((registro, index) => {
                     html += `
                         <div class="record-item observed" data-index="${index}">
-                            <button class="delete-record-btn" onclick="sistema.eliminarObservacionGlobal(${index})">
-                                <i class="fas fa-times"></i>
-                            </button>
                             <div class="record-placa">${registro.nroPlaca}</div>
                             <div class="record-details">
                                 <strong>Observación:</strong> ${registro.observacion}<br>
@@ -1669,32 +1455,6 @@
                 
                 observedList.innerHTML = html;
                 document.getElementById('observedCount').textContent = this.registrosObservadosGlobales.length;
-            }
-            
-            async eliminarObservacionGlobal(index) {
-                if (!this.authManager.isCurrentUserAdmin()) {
-                    this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede eliminar observaciones', 'warning');
-                    return;
-                }
-                
-                if (confirm('¿Está seguro de eliminar esta observación?')) {
-                    const observacion = this.registrosObservadosGlobales[index];
-                    
-                    // Eliminar de Supabase si está conectado
-                    if (this.supabaseManager.isConnected && observacion.id) {
-                        try {
-                            await this.supabaseManager.deleteObservacion(observacion.id);
-                        } catch (error) {
-                            console.error('Error eliminando observación de Supabase:', error);
-                        }
-                    }
-                    
-                    this.registrosObservadosGlobales.splice(index, 1);
-                    await this.guardarObservacionesGlobales();
-                    this.mostrarRegistrosObservados();
-                    this.actualizarContadores();
-                    this.mostrarAlerta('Éxito', 'Observación eliminada', 'success');
-                }
             }
             
             eliminarRegistroIndividual(index, tipo) {
@@ -1776,10 +1536,6 @@
                     registros = this.registrosAceptados;
                     nombreTipo = 'aceptados';
                 } else {
-                    if (!this.authManager.isCurrentUserAdmin()) {
-                        this.authManager.showAlert('Acceso Restringido', 'Solo el administrador puede exportar registros observados', 'warning');
-                        return;
-                    }
                     registros = this.registrosObservadosGlobales;
                     nombreTipo = 'observados';
                 }
@@ -1839,28 +1595,10 @@
                 
                 const mensaje = `¿Está seguro de enviar ${this.registrosAceptados.length} registro(s) aceptado(s)?\n\n✅ Esto realizará las siguientes acciones:\n1. Se descargará un archivo Excel con los registros\n2. Los registros se eliminarán del sistema`;
                 
-                document.getElementById('sendModalMessage').textContent = mensaje;
-                document.getElementById('sendProgress').style.display = 'none';
-                document.getElementById('sendModalConfirm').disabled = false;
-                document.getElementById('sendModalConfirm').innerHTML = '<i class="fas fa-paper-plane"></i> ENVIAR';
-                
-                document.getElementById('sendModal').style.display = 'flex';
-            }
-            
-            cerrarModalEnvio() {
-                document.getElementById('sendModal').style.display = 'none';
-            }
-            
-            confirmarEnvio() {
-                const botonConfirmar = document.getElementById('sendModalConfirm');
-                botonConfirmar.disabled = true;
-                botonConfirmar.innerHTML = '<div class="spinner"></div> ENVIANDO...';
-                
-                document.getElementById('sendProgress').style.display = 'block';
-                
-                setTimeout(() => {
+                // Crear modal temporal para confirmación
+                if (confirm(mensaje)) {
                     this.procesarEnvioCorreo();
-                }, 1000);
+                }
             }
             
             procesarEnvioCorreo() {
@@ -1870,7 +1608,6 @@
                     const usuario = this.authManager.getCurrentUser();
                     
                     if (cantidadRegistros === 0) {
-                        this.cerrarModalEnvio();
                         this.mostrarAlerta('Advertencia', 'No hay registros aceptados para enviar', 'warning');
                         return;
                     }
@@ -1890,147 +1627,134 @@
                         'PLACA',
                         'N° TRÁMITE',
                         'EMPRESA',
-                                'ESTADO',
-                                'TIPO HR',
-                                'FECHA REGISTRO',
-                                'USUARIO'
-                            ];
-                            
-                            datos.unshift(headers);
-                            
-                            const worksheet = XLSX.utils.aoa_to_sheet(datos);
-                            const workbook = XLSX.utils.book_new();
-                            XLSX.utils.book_append_sheet(workbook, worksheet, 'Registros_Aceptados');
-                            
-                            const fecha = new Date().toISOString().slice(0, 10);
-                            const nombreArchivo = `registros_aceptados_${fecha}_${usuario.replace(/\s+/g, '_')}.xlsx`;
-                            
-                            // Descargar el archivo
-                            XLSX.writeFile(workbook, nombreArchivo);
-                            
-                            // GUARDAR LOS REGISTROS QUE SE VAN A ELIMINAR PARA HISTORIAL
-                            const registrosEliminados = [...this.registrosAceptados];
-                            
-                            // 1. ELIMINAR registros aceptados locales
-                            this.registrosAceptados = [];
-                            this.guardarRegistrosEnLocalStorage();
-                            
-                            // 2. ELIMINAR las placas de registrosAceptadosGlobales para que puedan registrarse nuevamente
-                            registrosEliminados.forEach(registro => {
-                                const indexGlobal = this.registrosAceptadosGlobales.findIndex(
-                                    item => item.nroPlaca === registro.nroPlaca &&
-                                        item.usuarioRegistro === registro.usuarioRegistro &&
-                                        item.numeroTramite === registro.numeroTramite
-                                );
-                                
-                                if (indexGlobal !== -1) {
-                                    this.registrosAceptadosGlobales.splice(indexGlobal, 1);
-                                }
-                            });
-                            
-                            // Guardar los cambios en los registros globales
-                            this.guardarAceptadosGlobales();
-                            
-                            // Actualizar la interfaz
-                            this.mostrarRegistrosAceptados();
-                            this.actualizarContadores();
-                            
-                            this.cerrarModalEnvio();
-                            
-                            this.mostrarAlerta(
-                                'Éxito', 
-                                `✅ Se generó el archivo Excel con ${cantidadRegistros} registro(s) aceptado(s).\n\n📁 Archivo: ${nombreArchivo}\n\n✅ Las placas han sido liberadas y pueden registrarse nuevamente.`, 
-                                'success'
-                            );
-                            
-                        } catch (error) {
-                            console.error('Error procesando envío:', error);
-                            
-                            this.cerrarModalEnvio();
-                            
-                            this.mostrarAlerta(
-                                'Error', 
-                                `❌ Error al procesar el envío: ${error.message}\n\nLos registros no fueron eliminados.`, 
-                                'error'
-                            );
-                        }
-                    }
+                        'ESTADO',
+                        'TIPO HR',
+                        'FECHA REGISTRO',
+                        'USUARIO'
+                    ];
                     
-                    limpiarTodosRegistrosAceptados() {
-                        if (this.registrosAceptados.length === 0 && this.registrosAceptadosGlobales.length === 0) {
-                            this.mostrarAlerta('Información', 'No hay registros aceptados para limpiar', 'info');
-                            return;
-                        }
-                        
-                        const cantidadLocal = this.registrosAceptados.length;
-                        const cantidadGlobal = this.registrosAceptadosGlobales.length;
-                        
-                        if (confirm(`¿Está seguro de limpiar TODOS los registros aceptados?\n\n📋 Registros locales: ${cantidadLocal}\n🌐 Registros globales: ${cantidadGlobal}\n\n⚠️ Esto permitirá que todas las placas se registren nuevamente.`)) {
-                            this.registrosAceptados = [];
-                            this.registrosAceptadosGlobales = [];
-                            
-                            this.guardarRegistrosEnLocalStorage();
-                            this.guardarAceptadosGlobales();
-                            
-                            this.actualizarContadores();
-                            this.mostrarRegistrosAceptados();
-                            
-                            this.mostrarAlerta('Éxito', `Se limpiaron ${cantidadLocal} registros locales y ${cantidadGlobal} registros globales. Todas las placas pueden registrarse nuevamente.`, 'success');
-                        }
-                    }
+                    datos.unshift(headers);
                     
-                    s2ab(s) {
-                        const buf = new ArrayBuffer(s.length);
-                        const view = new Uint8Array(buf);
-                        for (let i = 0; i < s.length; i++) {
-                            view[i] = s.charCodeAt(i) & 0xFF;
-                        }
-                        return buf;
-                    }
+                    const worksheet = XLSX.utils.aoa_to_sheet(datos);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Registros_Aceptados');
                     
-                    mostrarAlerta(titulo, mensaje, tipo = 'info') {
-                        const alerta = document.createElement('div');
+                    const fecha = new Date().toISOString().slice(0, 10);
+                    const nombreArchivo = `registros_aceptados_${fecha}_${usuario.replace(/\s+/g, '_')}.xlsx`;
+                    
+                    // Descargar el archivo
+                    XLSX.writeFile(workbook, nombreArchivo);
+                    
+                    // GUARDAR LOS REGISTROS QUE SE VAN A ELIMINAR PARA HISTORIAL
+                    const registrosEliminados = [...this.registrosAceptados];
+                    
+                    // 1. ELIMINAR registros aceptados locales
+                    this.registrosAceptados = [];
+                    this.guardarRegistrosEnLocalStorage();
+                    
+                    // 2. ELIMINAR las placas de registrosAceptadosGlobales para que puedan registrarse nuevamente
+                    registrosEliminados.forEach(registro => {
+                        const indexGlobal = this.registrosAceptadosGlobales.findIndex(
+                            item => item.nroPlaca === registro.nroPlaca &&
+                                item.usuarioRegistro === registro.usuarioRegistro &&
+                                item.numeroTramite === registro.numeroTramite
+                        );
                         
-                        let clase = 'alert-info';
-                        switch(tipo) {
-                            case 'success': clase = 'alert-success'; break;
-                            case 'error': clase = 'alert-error'; break;
-                            case 'warning': clase = 'alert-warning'; break;
+                        if (indexGlobal !== -1) {
+                            this.registrosAceptadosGlobales.splice(indexGlobal, 1);
                         }
-                        
-                        alerta.className = `alert ${clase}`;
-                        
-                        let icono = 'fas fa-info-circle';
-                        if (tipo === 'success') icono = 'fas fa-check-circle';
-                        if (tipo === 'error') icono = 'fas fa-times-circle';
-                        if (tipo === 'warning') icono = 'fas fa-exclamation-triangle';
-                        
-                        alerta.innerHTML = `
-                            <i class="${icono}" style="font-size: 18px; margin-top: 2px;"></i>
-                            <div>
-                                <div style="font-size: 14px; margin-bottom: 4px; font-weight: 700;">${titulo}</div>
-                                <div style="font-size: 13px; opacity: 0.9;">${mensaje}</div>
-                            </div>
-                        `;
-                        
-                        document.body.appendChild(alerta);
-                        
-                        setTimeout(() => {
-                            alerta.style.animation = 'slideOutAlert 0.3s ease-out';
-                            setTimeout(() => {
-                                if (alerta.parentNode) {
-                                    alerta.parentNode.removeChild(alerta);
-                                }
-                            }, 300);
-                        }, 4000);
-                    }
+                    });
+                    
+                    // Guardar los cambios en los registros globales
+                    this.guardarAceptadosGlobales();
+                    
+                    // Actualizar la interfaz
+                    this.mostrarRegistrosAceptados();
+                    this.actualizarContadores();
+                    
+                    this.mostrarAlerta(
+                        'Éxito', 
+                        `✅ Se generó el archivo Excel con ${cantidadRegistros} registro(s) aceptado(s).\n\n📁 Archivo: ${nombreArchivo}\n\n✅ Las placas han sido liberadas y pueden registrarse nuevamente.`, 
+                        'success'
+                    );
+                    
+                } catch (error) {
+                    console.error('Error procesando envío:', error);
+                    
+                    this.mostrarAlerta(
+                        'Error', 
+                        `❌ Error al procesar el envío: ${error.message}\n\nLos registros no fueron eliminados.`, 
+                        'error'
+                    );
                 }
+            }
+            
+            limpiarTodosRegistrosAceptados() {
+                if (this.registrosAceptados.length === 0 && this.registrosAceptadosGlobales.length === 0) {
+                    this.mostrarAlerta('Información', 'No hay registros aceptados para limpiar', 'info');
+                    return;
+                }
+                
+                const cantidadLocal = this.registrosAceptados.length;
+                const cantidadGlobal = this.registrosAceptadosGlobales.length;
+                
+                if (confirm(`¿Está seguro de limpiar TODOS los registros aceptados?\n\n📋 Registros locales: ${cantidadLocal}\n🌐 Registros globales: ${cantidadGlobal}\n\n⚠️ Esto permitirá que todas las placas se registren nuevamente.`)) {
+                    this.registrosAceptados = [];
+                    this.registrosAceptadosGlobales = [];
+                    
+                    this.guardarRegistrosEnLocalStorage();
+                    this.guardarAceptadosGlobales();
+                    
+                    this.actualizarContadores();
+                    this.mostrarRegistrosAceptados();
+                    
+                    this.mostrarAlerta('Éxito', `Se limpiaron ${cantidadLocal} registros locales y ${cantidadGlobal} registros globales. Todas las placas pueden registrarse nuevamente.`, 'success');
+                }
+            }
+            
+            mostrarAlerta(titulo, mensaje, tipo = 'info') {
+                const alerta = document.createElement('div');
+                
+                let clase = 'alert-info';
+                switch(tipo) {
+                    case 'success': clase = 'alert-success'; break;
+                    case 'error': clase = 'alert-error'; break;
+                    case 'warning': clase = 'alert-warning'; break;
+                }
+                
+                alerta.className = `alert ${clase}`;
+                
+                let icono = 'fas fa-info-circle';
+                if (tipo === 'success') icono = 'fas fa-check-circle';
+                if (tipo === 'error') icono = 'fas fa-times-circle';
+                if (tipo === 'warning') icono = 'fas fa-exclamation-triangle';
+                
+                alerta.innerHTML = `
+                    <i class="${icono}" style="font-size: 18px; margin-top: 2px;"></i>
+                    <div>
+                        <div style="font-size: 14px; margin-bottom: 4px; font-weight: 700;">${titulo}</div>
+                        <div style="font-size: 13px; opacity: 0.9;">${mensaje}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(alerta);
+                
+                setTimeout(() => {
+                    alerta.style.animation = 'slideOutAlert 0.3s ease-out';
+                    setTimeout(() => {
+                        if (alerta.parentNode) {
+                            alerta.parentNode.removeChild(alerta);
+                        }
+                    }, 300);
+                }, 4000);
+            }
+        }
 
         // Inicializar el sistema
         let sistema;
         document.addEventListener('DOMContentLoaded', () => {
             sistema = new SistemaVerificacionPlacas();
-            console.log('✅ Sistema de Verificación de Placas inicializado con Supabase');
+            console.log('✅ Sistema de Verificación de Placas inicializado');
             
             window.sistema = sistema;
         });
