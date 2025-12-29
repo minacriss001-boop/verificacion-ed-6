@@ -150,7 +150,6 @@ class SupabaseManager {
         }
     }
     
-    // NUEVO: Método optimizado para búsqueda exacta de placa
     async buscarPlacaExacta(placa) {
         if (!this.isConnected) return null;
         
@@ -216,7 +215,6 @@ class SupabaseManager {
         }
     }
 
-    // Agrega este método helper
     normalizarPlacaParaBusqueda(placa) {
         if (!placa) return '';
         return placa
@@ -347,12 +345,6 @@ class SupabaseManager {
         }
     }
     
-
-
-
-
-    // En la clase SupabaseManager, agrega este método optimizado:
-
     async buscarPlacaOptimizada(placa) {
         if (!this.isConnected) return null;
         
